@@ -1,0 +1,180 @@
+package com.campus.secondhand.controller;
+
+import com.campus.secondhand.entity.Product;
+import com.campus.secondhand.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 商品Controller
+ */
+@RestController
+@RequestMapping("/api/product")
+public class ProductController {
+
+    @Autowired
+    private ProductService productService;
+
+    /**
+     * 发布商品
+     * @param product 商品信息
+     * @return 发布结果
+     */
+    @PostMapping("/publish")
+    public Result<Boolean> publishProduct(@RequestBody Product product) {
+        boolean result = productService.publishProduct(product);
+        if (result) {
+            return Result.success(true, "商品发布成功，请等待审核");
+        } else {
+            return Result.error("商品发布失败");
+        }
+    }
+
+    /**
+     * 获取商品列表
+     * @param categoryId 分类ID
+     * @param keyword 关键词
+     * @param page 页码
+     * @param size 每页数量
+     * @return 商品列表
+     */
+    @GetMapping("/list")
+    public Result<List<Product>> getProductList(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        List<Product> products = productService.getProductList(categoryId, keyword, page, size);
+        return Result.success(products, "获取商品列表成功");
+    }
+
+    /**
+     * 根据ID获取商品详情
+     * @param id 商品ID
+     * @return 商品详情
+     */
+    @GetMapping("/detail")
+    public Result<Product> getProductById(@RequestParam Long id) {
+        Product product = productService.getProductById(id);
+        if (product != null) {
+            return Result.success(product, "获取商品详情成功");
+        } else {
+            return Result.error("商品不存在");
+        }
+    }
+    
+    /**
+     * 增加商品浏览量
+     * @param id 商品ID
+     * @return 增加结果
+     */
+    @PostMapping("/view/{id}")
+    public Result<Boolean> increaseViewCount(@PathVariable Long id) {
+        boolean result = productService.increaseViewCount(id);
+        if (result) {
+            return Result.success(true, "浏览量增加成功");
+        } else {
+            return Result.error("浏览量增加失败");
+        }
+    }
+
+    /**
+     * 更新商品信息
+     * @param product 商品信息
+     * @return 更新结果
+     */
+    @PutMapping("/update")
+    public Result<Boolean> updateProduct(@RequestBody Product product) {
+        boolean result = productService.updateProduct(product);
+        if (result) {
+            return Result.success(true, "商品信息更新成功");
+        } else {
+            return Result.error("商品信息更新失败");
+        }
+    }
+
+    /**
+     * 下架商品
+     * @param id 商品ID
+     * @return 下架结果
+     */
+    @PutMapping("/offline")
+    public Result<Boolean> offlineProduct(@RequestParam Long id) {
+        boolean result = productService.offlineProduct(id);
+        if (result) {
+            return Result.success(true, "商品下架成功");
+        } else {
+            return Result.error("商品下架失败");
+        }
+    }
+
+    /**
+     * 根据用户ID获取商品列表
+     * @param userId 用户ID
+     * @param page 页码
+     * @param size 每页数量
+     * @return 商品列表
+     */
+    @GetMapping("/user")
+    public Result<List<Product>> getProductsByUserId(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        List<Product> products = productService.getProductsByUserId(userId, page, size);
+        return Result.success(products, "获取用户商品列表成功");
+    }
+
+    /**
+     * 通用结果类
+     */
+    static class Result<T> {
+        private Integer code;
+        private String message;
+        private T data;
+
+        public Result() {
+        }
+
+        public Result(Integer code, String message, T data) {
+            this.code = code;
+            this.message = message;
+            this.data = data;
+        }
+
+        public static <T> Result<T> success(T data, String message) {
+            return new Result<>(200, message, data);
+        }
+
+        public static <T> Result<T> error(String message) {
+            return new Result<>(500, message, null);
+        }
+
+        // getter and setter
+        public Integer getCode() {
+            return code;
+        }
+
+        public void setCode(Integer code) {
+            this.code = code;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public T getData() {
+            return data;
+        }
+
+        public void setData(T data) {
+            this.data = data;
+        }
+    }
+
+}
