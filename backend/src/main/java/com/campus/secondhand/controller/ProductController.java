@@ -125,6 +125,36 @@ public class ProductController {
         List<Product> products = productService.getProductsByUserId(userId, page, size);
         return Result.success(products, "获取用户商品列表成功");
     }
+    
+    /**
+     * 获取待审核的商品列表
+     * @param page 页码
+     * @param size 每页数量
+     * @return 待审核商品列表
+     */
+    @GetMapping("/pending")
+    public Result<List<Product>> getPendingProducts(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        List<Product> products = productService.getPendingProducts(page, size);
+        return Result.success(products, "获取待审核商品列表成功");
+    }
+    
+    /**
+     * 审核商品
+     * @param productId 商品ID
+     * @param approved 是否通过
+     * @return 审核结果
+     */
+    @PutMapping("/review")
+    public Result<Boolean> reviewProduct(@RequestParam Long productId, @RequestParam Boolean approved) {
+        boolean result = productService.reviewProduct(productId, approved);
+        if (result) {
+            return Result.success(true, "商品审核成功");
+        } else {
+            return Result.error("商品审核失败");
+        }
+    }
 
     /**
      * 通用结果类

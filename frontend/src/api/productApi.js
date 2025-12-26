@@ -68,3 +68,23 @@ export const offlineProduct = (id) => {
 export const getProductsByUserId = (userId, page = 1, size = 10) => {
   return axiosInstance.get('/product/user', { params: { userId, page, size } });
 };
+
+/**
+ * 获取待审核的商品列表
+ * @param {number} [page=1] - 页码
+ * @param {number} [size=10] - 每页数量
+ * @returns {Promise} - 待审核商品列表
+ */
+export const getPendingProducts = (page = 1, size = 10) => {
+  return axiosInstance.get('/product/pending', { params: { page, size } });
+};
+
+/**
+ * 审核商品
+ * @param {number} productId - 商品ID
+ * @param {boolean} approved - 是否通过
+ * @returns {Promise} - 审核结果
+ */
+export const reviewProduct = (productId, approved) => {
+  return axiosInstance.put('/product/review', null, { params: { productId, approved } });
+};

@@ -63,5 +63,21 @@ public interface ProductService extends IService<Product> {
      * @return 增加结果
      */
     boolean increaseViewCount(Long id);
+    
+    /**
+     * 获取待审核的商品列表
+     * @param page 页码
+     * @param size 每页数量
+     * @return 待审核商品列表
+     */
+    List<Product> getPendingProducts(Integer page, Integer size);
+    
+    /**
+     * 审核商品
+     * @param productId 商品ID
+     * @param approved 是否通过
+     * @return 审核结果
+     */
+    boolean reviewProduct(Long productId, boolean approved);
 
 }

@@ -55,6 +55,12 @@ const ProductDetail = () => {
       navigate('/login');
       return;
     }
+    
+    // 检查商品是否已售出
+    if (product.status === 3) {
+      setError('该商品已售出');
+      return;
+    }
 
     try {
       // 创建订单

@@ -58,3 +58,21 @@ export const getOrderById = (id) => {
 export const getPurchaseHistory = (userId) => {
   return axiosInstance.get('/order/purchase-history', { params: { userId } });
 };
+
+/**
+ * 退货
+ * @param {number} orderId - 订单ID
+ * @returns {Promise} - 退货结果
+ */
+export const returnProduct = (orderId) => {
+  return axiosInstance.post('/order/return', { orderId });
+};
+
+/**
+ * 删除购买记录
+ * @param {number} orderId - 订单ID
+ * @returns {Promise} - 删除结果
+ */
+export const deletePurchaseRecord = (orderId) => {
+  return axiosInstance.delete('/order/delete', { params: { orderId } });
+};

@@ -17,8 +17,15 @@ const Login = () => {
       if (response.code === 200) {
         // 保存用户信息到本地存储
         localStorage.setItem('user', JSON.stringify(response.data));
-        // 跳转到首页，使用replace避免返回登录页
-        navigate('/', { replace: true });
+        // 根据用户类型跳转到不同页面
+        const user = response.data;
+        if (user.userType === 2) {
+          // 管理员跳转到管理员界面
+          navigate('/admin', { replace: true });
+        } else {
+          // 普通用户和商家用户跳转到首页
+          navigate('/', { replace: true });
+        }
         // 刷新页面，确保Navigation组件能获取到最新的用户信息
         window.location.reload();
       } else {

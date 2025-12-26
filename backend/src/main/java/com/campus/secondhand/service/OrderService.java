@@ -48,5 +48,19 @@ public interface OrderService extends IService<Order> {
      * @return 订单详情
      */
     Order getOrderById(Long id);
+    
+    /**
+     * 退货
+     * @param orderId 订单ID
+     * @return 退货结果
+     */
+    boolean returnProduct(Long orderId);
+    
+    /**
+     * 删除购买记录
+     * @param orderId 订单ID
+     * @return 删除结果
+     */
+    boolean deletePurchaseRecord(Long orderId);
 
 }

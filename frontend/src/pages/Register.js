@@ -9,17 +9,14 @@ const Register = () => {
     realName: '',
     studentId: '',
     phone: '',
-    email: '',
-    userType: 0 // 默认普通用户
+    email: ''
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // 将userType转换为数字类型
-    const processedValue = name === 'userType' ? parseInt(value) : value;
-    setFormData(prev => ({ ...prev, [name]: processedValue }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleRegister = async (e) => {
@@ -109,18 +106,6 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="userType">用户类型</label>
-            <select
-              id="userType"
-              name="userType"
-              value={formData.userType}
-              onChange={handleChange}
-            >
-              <option value={0}>普通用户</option>
-              <option value={1}>商家用户</option>
-            </select>
           </div>
           <button type="submit" className="register-button">注册</button>
         </form>

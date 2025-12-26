@@ -2,6 +2,7 @@ package com.campus.secondhand.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.campus.secondhand.entity.User;
+import java.util.List;
 
 /**
  * 用户Service接口
@@ -43,5 +44,40 @@ public interface UserService extends IService<User> {
      * @return 用户信息
      */
     User findByStudentId(String studentId);
+    
+    /**
+     * 获取待审核的商家用户申请
+     * @return 待审核用户列表
+     */
+    List<User> getPendingMerchantApplications();
+    
+    /**
+     * 审核商家用户申请
+     * @param userId 用户ID
+     * @param approved 是否通过
+     * @return 审核结果
+     */
+    boolean reviewMerchantApplication(Long userId, boolean approved);
+    
+    /**
+     * 获取所有用户列表
+     * @return 用户列表
+     */
+    List<User> getAllUsers();
+    
+    /**
+     * 封禁/解封用户
+     * @param userId 用户ID
+     * @param status 状态：1正常，2禁用
+     * @return 操作结果
+     */
+    boolean updateUserStatus(Long userId, Integer status);
+    
+    /**
+     * 申请成为商家用户
+     * @param userId 用户ID
+     * @return 申请结果
+     */
+    boolean applyForMerchant(Long userId);
 
 }

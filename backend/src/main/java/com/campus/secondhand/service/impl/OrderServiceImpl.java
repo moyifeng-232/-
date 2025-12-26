@@ -30,8 +30,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // 生成订单号
         String orderNo = generateOrderNo();
         order.setOrderNo(orderNo);
-        // 设置默认状态为待支付
-        order.setStatus(0);
+        // 测试阶段直接设置为已完成状态
+        order.setStatus(3);
         // 设置创建时间和更新时间
         order.setCreateTime(new Date());
         order.setUpdateTime(new Date());
@@ -84,6 +84,36 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     public Order getOrderById(Long id) {
         return baseMapper.selectById(id);
+    }
+    
+    @Override
+    public boolean returnProduct(Long orderId) {
+        // 根据订单ID查询订单
+        Order order = baseMapper.selectById(orderId);
+        if (order == null) {
+            return false;
+        }
+        
+        // 查询关联的商品
+        Product product = productService.getProductById(order.getProductId());
+        if (product == null) {
+            return false;
+        }
+        
+        // 更新商品状态：已售出(3) -> 在售(1)
+        product.setStatus(1);
+        productService.updateProduct(product);
+        
+        // 更新订单状态：已完成(3) -> 已退货(5)
+        order.setStatus(5);
+        order.setUpdateTime(new Date());
+        return updateById(order);
+    }
+    
+    @Override
+    public boolean deletePurchaseRecord(Long orderId) {
+        // 直接删除订单记录
+        return removeById(orderId);
     }
 
     /**

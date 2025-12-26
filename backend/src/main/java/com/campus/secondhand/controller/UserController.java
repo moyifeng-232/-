@@ -118,6 +118,71 @@ public class UserController {
             return Result.error("更新失败");
         }
     }
+    
+    /**
+     * 获取待审核的商家用户申请
+     * @return 待审核用户列表
+     */
+    @GetMapping("/pending-merchants")
+    public Result getPendingMerchantApplications() {
+        return Result.success(userService.getPendingMerchantApplications(), "获取待审核商家申请成功");
+    }
+    
+    /**
+     * 审核商家用户申请
+     * @param userId 用户ID
+     * @param approved 是否通过
+     * @return 审核结果
+     */
+    @PutMapping("/review-merchant")
+    public Result reviewMerchantApplication(@RequestParam Long userId, @RequestParam Boolean approved) {
+        boolean result = userService.reviewMerchantApplication(userId, approved);
+        if (result) {
+            return Result.success("审核成功");
+        } else {
+            return Result.error("审核失败");
+        }
+    }
+    
+    /**
+     * 获取所有用户列表
+     * @return 用户列表
+     */
+    @GetMapping("/all")
+    public Result getAllUsers() {
+        return Result.success(userService.getAllUsers(), "获取用户列表成功");
+    }
+    
+    /**
+     * 更新用户状态（封禁/解封）
+     * @param userId 用户ID
+     * @param status 状态：1正常，2禁用
+     * @return 操作结果
+     */
+    @PutMapping("/status")
+    public Result updateUserStatus(@RequestParam Long userId, @RequestParam Integer status) {
+        boolean result = userService.updateUserStatus(userId, status);
+        if (result) {
+            return Result.success("操作成功");
+        } else {
+            return Result.error("操作失败");
+        }
+    }
+    
+    /**
+     * 申请成为商家用户
+     * @param userId 用户ID
+     * @return 申请结果
+     */
+    @PutMapping("/apply-merchant")
+    public Result applyForMerchant(@RequestParam Long userId) {
+        boolean result = userService.applyForMerchant(userId);
+        if (result) {
+            return Result.success("申请成功，请等待管理员审核");
+        } else {
+            return Result.error("申请失败");
+        }
+    }
 
     /**
      * 通用结果类

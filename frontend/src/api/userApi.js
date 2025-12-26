@@ -37,3 +37,48 @@ export const getUserInfo = (id) => {
 export const updateUserInfo = (data) => {
   return axiosInstance.put('/user/update', data);
 };
+
+/**
+ * 获取待审核的商家用户申请
+ * @returns {Promise} - 待审核用户列表
+ */
+export const getPendingMerchantApplications = () => {
+  return axiosInstance.get('/user/pending-merchants');
+};
+
+/**
+ * 审核商家用户申请
+ * @param {number} userId - 用户ID
+ * @param {boolean} approved - 是否通过
+ * @returns {Promise} - 审核结果
+ */
+export const reviewMerchantApplication = (userId, approved) => {
+  return axiosInstance.put('/user/review-merchant', null, { params: { userId, approved } });
+};
+
+/**
+ * 获取所有用户列表
+ * @returns {Promise} - 用户列表
+ */
+export const getAllUsers = () => {
+  return axiosInstance.get('/user/all');
+};
+
+/**
+ * 更新用户状态（封禁/解封）
+ * @param {number} userId - 用户ID
+ * @param {number} status - 状态：1正常，2禁用
+ * @returns {Promise} - 操作结果
+ */
+export const updateUserStatus = (userId, status) => {
+  return axiosInstance.put('/user/status', null, { params: { userId, status } });
+};
+
+/**
+ * 申请成为商家用户
+ * @param {number} userId - 用户ID
+ * @returns {Promise} - 申请结果
+ */
+export const applyForMerchant = (userId) => {
+  return axiosInstance.put('/user/apply-merchant', null, { params: { userId } });
+};

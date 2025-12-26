@@ -134,6 +134,37 @@ public class OrderController {
         
         return Result.success(purchaseList, "获取已购买商品列表成功");
     }
+    
+    /**
+     * 退货
+     * @param orderId 订单ID
+     * @return 退货结果
+     */
+    @PostMapping("/return")
+    public Result<Boolean> returnProduct(@RequestBody Map<String, Long> request) {
+        Long orderId = request.get("orderId");
+        boolean result = orderService.returnProduct(orderId);
+        if (result) {
+            return Result.success(true, "退货成功");
+        } else {
+            return Result.error("退货失败");
+        }
+    }
+    
+    /**
+     * 删除购买记录
+     * @param orderId 订单ID
+     * @return 删除结果
+     */
+    @DeleteMapping("/delete")
+    public Result<Boolean> deletePurchaseRecord(@RequestParam Long orderId) {
+        boolean result = orderService.deletePurchaseRecord(orderId);
+        if (result) {
+            return Result.success(true, "删除成功");
+        } else {
+            return Result.error("删除失败");
+        }
+    }
 
     /**
      * 通用结果类
