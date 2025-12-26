@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须和Mapper接口全类名一致 -->
+<mapper namespace="com.campus.secondhand.mapper.OrderMapper">
+    <!-- 购买记录查询：修复表名+字段映射+空值处理 -->
+    <select id="selectPurchaseHistory" resultType="com.campus.secondhand.entity.Order">
+        SELECT
+            id,
+            order_no as orderNo,
+            alipay_order_no as alipayOrderNo,
+            buyer_id as buyerId,
+            seller_id as sellerId,
+            product_id as productId,
+            total_amount as totalAmount,
+            status,
+            pay_time as payTime,
+            create_time as createTime,
+            update_time as updateTime,
+            is_deleted as isDeleted
+        FROM `order`
+        WHERE 1=1
+          AND buyer_id = #{userId}
+          AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+</mapper>

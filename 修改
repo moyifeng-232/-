@@ -1,0 +1,59 @@
+后端主要：
+增加了：Result.java，AliPayController.java，OrderIdRequest.java，PayUtil.java
+修改了：CorsConfig.java，OrderController.java，UserController.java，ProductController.java，Order.java，OrderService.java，OrderServiceImpl.java
+
+还在maven中添加了依赖
+akarta.servlet-api-5.0.0，alipay-sdk-java.4.40.8.ALL,fastjson.1.2.83,javax.servlet-api.4.0.1
+
+前端主要：
+增加了：alipayApi.js，AlipayPay.js
+修改了：orderApi.js，productApi.js，axiosInstance.js，App.js，App.css，ProductDetail.jsPurchaseHistory.js
+
+
+Result.java：统一后端接口返回格式（包含 code、data、message），让前端能标准化处理响应结果
+
+AliPayController.java	：支付宝支付核心控制器，处理支付订单生成、支付状态查询、支付回调等请求
+
+OrderIdRequest.java	：封装订单 ID 参数的请求实体类，规范接口参数传递（如接收前端的 orderId 参数）
+
+PayUtil.java：支付宝支付工具类，封装签名、请求拼接、调用支付宝 SDK 等核心支付逻辑
+
+CorsConfig.java	：调整跨域配置（如新增允许携带 Cookie、放行支付回调地址），解决前端跨域请求支付接口问题
+
+OrderController.java：新增 / 完善订单支付相关接口（如取消订单、更新支付状态），适配支付流程
+
+UserController.java：补充用户登录态校验、权限控制，确保支付接口仅对已登录用户开放
+
+ProductController.java：新增取消发布商品接口，完善商品状态流转（与订单 / 支付状态联动）
+
+Order.java	：新增支付相关字段（如订单号、支付状态），存储支付核心信息
+
+OrderService.java/Impl：新增订单支付状态更新、未支付订单校验逻辑，支撑支付与订单的业务联动
+
+akarta.servlet-api-5.0.0：适配 Servlet 5.0 规范，支持 Tomcat 9 + 的 Servlet 特性（如跨域、请求处理）
+
+alipay-sdk-java.4.40.8.ALL：支付宝官方 SDK，提供支付订单生成、状态查询等核心 API 调用能力
+
+fastjson.1.2.83：高性能 JSON 解析工具，用于拼接支付宝请求的 JSON 参数、解析回调数据
+
+javax.servlet-api.4.0.1：兼容旧版 Servlet 规范，确保跨域配置、请求参数解析等功能兼容运行
+
+alipayApi.js：封装支付宝支付相关 API 请求（生成支付订单、查询支付状态），统一支付接口调用
+
+AlipayPay.jsx：支付宝支付页面组件，渲染后端返回的支付 HTML、处理支付跳转 / 结果回调
+
+orderApi.js：新增订单支付状态刷新、取消订单等方法，适配支付后的订单状态更新
+
+productApi.js：新增取消发布商品 API 方法，对接后端商品下架接口，支撑卖家商品管理
+
+axiosInstance.js：新增跨域携带 Cookie、支付接口返回 HTML 格式处理，适配支付请求的特殊需求
+
+App.js：新增支付页面路由、权限控制，让用户能跳转到支付页并完成支付流程
+
+App.css：补充支付页面、商品管理页面的样式，优化用户交互体验
+
+ProductDetail.jsx：新增 “立即购买” 按钮，触发订单创建并跳转支付页，打通商品购买→支付链路
+
+PurchaseHistory.jsx：新增 “去支付”“取消订单” 按钮，处理已创建但未支付的订单，完善订单生命周期
+
+主要添加了支付宝的沙箱支付，以及一些逻辑上的提升，外观上的优化
