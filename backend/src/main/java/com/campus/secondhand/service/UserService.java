@@ -80,4 +80,12 @@ public interface UserService extends IService<User> {
      */
     boolean applyForMerchant(Long userId);
 
+    /**
+     * 搜索用户
+     * @param searchType 搜索类型：id、username、realName、studentId
+     * @param keyword 搜索关键词
+     * @return 用户列表
+     */
+    List<User> searchUsers(String searchType, String keyword);
+
 }

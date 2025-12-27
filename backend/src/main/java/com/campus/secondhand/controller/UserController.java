@@ -6,6 +6,8 @@ import com.campus.secondhand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 用户Controller
  */
@@ -183,5 +185,17 @@ public class UserController {
         } else {
             return Result.error("申请失败");
         }
+    }
+    
+    /**
+     * 搜索用户
+     * @param searchType 搜索类型：id、username、realName、studentId
+     * @param keyword 搜索关键词
+     * @return 用户列表
+     */
+    @GetMapping("/search")
+    public Result searchUsers(@RequestParam String searchType, @RequestParam String keyword) {
+        List<User> users = userService.searchUsers(searchType, keyword);
+        return Result.success(users, "搜索成功");
     }
 }

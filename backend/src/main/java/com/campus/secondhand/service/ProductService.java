@@ -23,9 +23,9 @@ public interface ProductService extends IService<Product> {
      * @param keyword 关键词
      * @param page 页码
      * @param size 每页数量
-     * @return 商品列表
+     * @return 分页商品列表
      */
-    List<Product> getProductList(Long categoryId, String keyword, Integer page, Integer size);
+    com.campus.secondhand.dto.PageResult<Product> getProductList(Long categoryId, String keyword, Integer page, Integer size);
 
     /**
      * 根据ID获取商品详情
@@ -33,6 +33,20 @@ public interface ProductService extends IService<Product> {
      * @return 商品详情
      */
     Product getProductById(Long id);
+    
+    /**
+     * 根据ID获取商品详情DTO，包含卖家信息
+     * @param id 商品ID
+     * @return 商品详情DTO
+     */
+    com.campus.secondhand.dto.ProductDetailDto getProductDetailDtoById(Long id);
+    
+    /**
+     * 删除商品
+     * @param id 商品ID
+     * @return 删除结果
+     */
+    boolean deleteProduct(Long id);
 
     /**
      * 更新商品信息
@@ -70,7 +84,7 @@ public interface ProductService extends IService<Product> {
      * @param size 每页数量
      * @return 待审核商品列表
      */
-    List<Product> getPendingProducts(Integer page, Integer size);
+    List<com.campus.secondhand.dto.ProductReviewDto> getPendingProducts(Integer page, Integer size);
     
     /**
      * 审核商品

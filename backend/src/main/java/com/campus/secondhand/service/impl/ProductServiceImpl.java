@@ -3,11 +3,15 @@ package com.campus.secondhand.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.campus.secondhand.dto.PageResult;
+import com.campus.secondhand.dto.ProductDetailDto;
 import com.campus.secondhand.entity.Category;
 import com.campus.secondhand.entity.Product;
+import com.campus.secondhand.entity.User;
 import com.campus.secondhand.mapper.ProductMapper;
 import com.campus.secondhand.service.CategoryService;
 import com.campus.secondhand.service.ProductService;
+import com.campus.secondhand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +26,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     @Autowired
     private CategoryService categoryService;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public boolean publishProduct(Product product) {
@@ -34,7 +41,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    public List<Product> getProductList(Long categoryId, String keyword, Integer page, Integer size) {
+    public PageResult<Product> getProductList(Long categoryId, String keyword, Integer page, Integer size) {
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         // 查询在售和已售出的商品
         queryWrapper.in("status", Arrays.asList(1, 3));
@@ -79,7 +86,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         // 分页查询
         Page<Product> productPage = new Page<>(page, size);
         baseMapper.selectPage(productPage, queryWrapper);
-        return productPage.getRecords();
+        // 转换为PageResult对象
+        return PageResult.fromPage(productPage);
     }
 
     @Override
@@ -132,7 +140,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    public List<Product> getPendingProducts(Integer page, Integer size) {
+    public List<com.campus.secondhand.dto.ProductReviewDto> getPendingProducts(Integer page, Integer size) {
         // 查询待审核的商品：status=0（待审核）
         QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("status", 0);
@@ -141,7 +149,14 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         // 分页查询
         Page<Product> productPage = new Page<>(page, size);
         baseMapper.selectPage(productPage, queryWrapper);
-        return productPage.getRecords();
+        
+        // 转换为包含发布者信息的ProductReviewDto列表
+        return productPage.getRecords().stream().map(product -> {
+            // 获取卖家信息
+            User seller = userService.getById(product.getUserId());
+            String sellerUsername = seller != null ? seller.getUsername() : "未知卖家";
+            return com.campus.secondhand.dto.ProductReviewDto.fromProduct(product, sellerUsername);
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -160,6 +175,33 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
         
         return updateById(product);
+    }
+
+    @Override
+    public ProductDetailDto getProductDetailDtoById(Long id) {
+        Product product = baseMapper.selectById(id);
+        if (product == null) {
+            return null;
+        }
+        
+        // 获取卖家信息
+        User seller = userService.getById(product.getUserId());
+        String sellerUsername = seller != null ? seller.getUsername() : "未知卖家";
+        
+        // 转换为DTO
+        return ProductDetailDto.fromProduct(product, sellerUsername);
+    }
+
+    @Override
+    public boolean deleteProduct(Long id) {
+        // 验证商品是否存在
+        Product product = baseMapper.selectById(id);
+        if (product != null) {
+            // 删除商品
+            return removeById(id);
+        } else {
+            return false;
+        }
     }
 
 }

@@ -139,6 +139,7 @@ const ProductDetail = () => {
                         <div className="product-meta">
                             <span className="view-count">浏览 {product.viewCount}</span>
                             <span className="create-time">发布时间：{new Date(product.createTime).toLocaleString()}</span>
+                            <span className="seller-info">卖家：{product.sellerUsername}</span>
                         </div>
                     </div>
                 </div>

@@ -82,3 +82,13 @@ export const updateUserStatus = (userId, status) => {
 export const applyForMerchant = (userId) => {
   return axiosInstance.put('/user/apply-merchant', null, { params: { userId } });
 };
+
+/**
+ * 搜索用户
+ * @param {string} searchType - 搜索类型：id、username、realName、studentId
+ * @param {string} keyword - 搜索关键词
+ * @returns {Promise} - 搜索结果
+ */
+export const searchUsers = (searchType, keyword) => {
+  return axiosInstance.get('/user/search', { params: { searchType, keyword } });
+};

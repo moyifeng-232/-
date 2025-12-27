@@ -55,7 +55,7 @@ export const updateProduct = (data) => {
  * @returns {Promise} - 下架结果
  */
 export const offlineProduct = (id) => {
-  return axiosInstance.put('/product/offline', { params: { id } });
+  return axiosInstance.put('/product/offline', null, { params: { id } });
 };
 
 /**
@@ -87,4 +87,32 @@ export const getPendingProducts = (page = 1, size = 10) => {
  */
 export const reviewProduct = (productId, approved) => {
   return axiosInstance.put('/product/review', null, { params: { productId, approved } });
+};
+
+/**
+ * 删除商品
+ * @param {number} id - 商品ID
+ * @returns {Promise} - 删除结果
+ */
+export const deleteProduct = (id) => {
+  return axiosInstance.delete('/product/delete', { params: { id } });
+};
+
+/**
+ * 上传图片
+ * @param {Array} files - 图片文件数组
+ * @returns {Promise} - 上传结果，包含图片URL列表
+ */
+export const uploadImages = (files) => {
+  const formData = new FormData();
+  // 添加文件到FormData
+  files.forEach(file => {
+    formData.append('files', file);
+  });
+  // 发送POST请求，使用multipart/form-data
+  return axiosInstance.post('/file/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
 };

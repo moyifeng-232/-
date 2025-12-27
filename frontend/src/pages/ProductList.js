@@ -75,9 +75,15 @@ const ProductList = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
+  const [size, setSize] = useState(12); // 每页显示12个商品（3行×4列）
   const [loading, setLoading] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState([]); // 展开的分类ID数组
+  
+  // 分页信息
+  const [total, setTotal] = useState(0);
+  const [pages, setPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   // 获取商品列表
   const fetchProducts = async () => {
@@ -90,7 +96,14 @@ const ProductList = () => {
         size
       });
       if (response.code === 200) {
-        setProducts(response.data);
+        // 更新商品列表
+        setProducts(response.data.records);
+        // 更新分页信息
+        setTotal(response.data.total);
+        // 确保pages至少为1，避免显示“共0页”
+        setPages(Math.max(1, response.data.pages));
+        setHasNext(response.data.hasNext);
+        setHasPrevious(response.data.hasPrevious);
       }
     } catch (err) {
       console.error('获取商品列表失败:', err);
@@ -128,7 +141,7 @@ const ProductList = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, keyword, page, size]);
+  }, [selectedCategory, page, size]);
 
   const handleSearch = () => {
     setPage(1);
@@ -201,14 +214,7 @@ const ProductList = () => {
                   <div className="product-info">
                     <h4>{product.title}</h4>
                     <p className="product-price">¥{product.price.toFixed(2)}</p>
-                    <p className="product-description">{product.description.substring(0, 50)}...</p>
-                    <div className="product-meta">
-                      <span className="view-count">浏览 {product.viewCount}</span>
-                      {/* 已售出状态 */}
-                      {product.status === 3 && (
-                        <span className="product-status sold">已售出</span>
-                      )}
-                    </div>
+                    {/* 已售出标签移到图片上，这里不再显示 */}
                   </div>
                 </Link>
               </div>
@@ -220,13 +226,16 @@ const ProductList = () => {
       {/* 分页 */}
       <div className="pagination">
         <button 
-          disabled={page === 1} 
+          disabled={!hasPrevious} 
           onClick={() => setPage(prev => Math.max(1, prev - 1))}
         >
           上一页
         </button>
-        <span>第 {page} 页</span>
-        <button onClick={() => setPage(prev => prev + 1)}>
+        <span>第 {page} 页/共 {pages} 页</span>
+        <button 
+          disabled={!hasNext} 
+          onClick={() => setPage(prev => prev + 1)}
+        >
           下一页
         </button>
       </div>

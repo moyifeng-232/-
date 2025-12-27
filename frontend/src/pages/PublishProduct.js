@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { publishProduct } from '../api/productApi';
-import { getAllCategories } from '../api/categoryApi';
+import { publishProduct, uploadImages } from '../api/productApi';
+import { getAllCategories, getLevelOneCategories, getCategoriesByParentId } from '../api/categoryApi';
 
 const PublishProduct = () => {
   const navigate = useNavigate();
@@ -24,6 +24,8 @@ const PublishProduct = () => {
   const [success, setSuccess] = useState('');
   // 图片预览
   const [imagePreviews, setImagePreviews] = useState([]);
+  // 加载状态
+  const [loading, setLoading] = useState(false);
   
   // 获取分类列表
   useEffect(() => {
@@ -81,25 +83,40 @@ const PublishProduct = () => {
   };
   
   // 处理图片上传
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     
-    // 限制最多上传5张图片
-    if (files.length > 5) {
+    // 限制最多上传5张图片（包括已上传的）
+    if (formData.imageUrls.length + files.length > 5) {
       setError('最多只能上传5张图片');
       return;
     }
     
-    // 预览图片
-    const previews = files.map(file => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...previews]);
-    
-    // 保存图片URL（实际项目中应该上传到服务器，这里只是模拟）
-    const urls = files.map(file => URL.createObjectURL(file));
-    setFormData(prev => ({
-      ...prev,
-      imageUrls: [...prev.imageUrls, ...urls]
-    }));
+    setLoading(true);
+    try {
+      // 调用图片上传API
+      const response = await uploadImages(files);
+      if (response.code === 200) {
+        const uploadedUrls = response.data;
+        
+        // 生成预览图片URL（本地blob URL用于预览）
+        const previews = files.map(file => URL.createObjectURL(file));
+        setImagePreviews(prev => [...prev, ...previews]);
+        
+        // 保存服务器返回的真实图片URL
+        setFormData(prev => ({
+          ...prev,
+          imageUrls: [...prev.imageUrls, ...uploadedUrls]
+        }));
+      } else {
+        setError(response.message || '图片上传失败');
+      }
+    } catch (err) {
+      console.error('图片上传失败:', err);
+      setError('图片上传失败，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
   };
   
   // 移除图片

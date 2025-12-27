@@ -39,15 +39,15 @@ public class ProductController {
      * @param keyword 关键词
      * @param page 页码
      * @param size 每页数量
-     * @return 商品列表
+     * @return 分页商品列表
      */
     @GetMapping("/list")
-    public Result<List<Product>> getProductList(
+    public Result<com.campus.secondhand.dto.PageResult<Product>> getProductList(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size) {
-        List<Product> products = productService.getProductList(categoryId, keyword, page, size);
+            @RequestParam(defaultValue = "12") Integer size) {
+        com.campus.secondhand.dto.PageResult<Product> products = productService.getProductList(categoryId, keyword, page, size);
         return Result.success(products, "获取商品列表成功");
     }
 
@@ -57,8 +57,8 @@ public class ProductController {
      * @return 商品详情
      */
     @GetMapping("/detail")
-    public Result<Product> getProductById(@RequestParam Long id) {
-        Product product = productService.getProductById(id);
+    public Result<com.campus.secondhand.dto.ProductDetailDto> getProductById(@RequestParam Long id) {
+        com.campus.secondhand.dto.ProductDetailDto product = productService.getProductDetailDtoById(id);
         if (product != null) {
             return Result.success(product, "获取商品详情成功");
         } else {
@@ -110,6 +110,21 @@ public class ProductController {
             return Result.error("商品下架失败");
         }
     }
+    
+    /**
+     * 删除商品
+     * @param id 商品ID
+     * @return 删除结果
+     */
+    @DeleteMapping("/delete")
+    public Result<Boolean> deleteProduct(@RequestParam Long id) {
+        boolean result = productService.deleteProduct(id);
+        if (result) {
+            return Result.success(true, "商品删除成功");
+        } else {
+            return Result.error("商品删除失败");
+        }
+    }
 
     /**
      * 根据用户ID获取商品列表
@@ -134,10 +149,10 @@ public class ProductController {
      * @return 待审核商品列表
      */
     @GetMapping("/pending")
-    public Result<List<Product>> getPendingProducts(
+    public Result<List<com.campus.secondhand.dto.ProductReviewDto>> getPendingProducts(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size) {
-        List<Product> products = productService.getPendingProducts(page, size);
+        List<com.campus.secondhand.dto.ProductReviewDto> products = productService.getPendingProducts(page, size);
         return Result.success(products, "获取待审核商品列表成功");
     }
     

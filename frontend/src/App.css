@@ -175,7 +175,383 @@ body {
   border-radius: 8px;
 }
 
-/* 商品状态标签样式 */
+/* 商品列表样式，参考购买记录列表 */
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 商家申请列表样式 */
+.application-list {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 商品审核容器样式 */
+.product-review {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 商家申请审核容器样式 */
+.merchant-applications {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 审核内容容器样式 */
+.review-content {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 审核管理页面容器样式 */
+.admin-review-management {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
+/* 商品项包装器，用于布局商品主体和审核按钮 */
+.product-item-wrapper {
+  display: flex;
+  align-items: flex-start;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+  margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 商品项主体内容，占满主要宽度 */
+.product-item-main {
+  flex: 1;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+/* 商品基本信息样式 */
+.product-info {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 管理员审核页面商品价格样式，与其他属性相同 */
+.admin-review-management .product-price {
+  color: #6b7280 !important;
+  font-size: 0.9rem !important;
+  margin: 0.5rem 0 !important;
+  font-weight: normal !important;
+  font-family: inherit !important;
+}
+
+/* 管理员审核页面商品名称样式，加大字号更醒目 */
+.admin-review-management .product-info h4 {
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  color: #282c34 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* 商品元信息行样式，分类和发布时间并列 */
+.product-meta-row {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0;
+}
+
+.product-meta-row p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* 发布者信息样式 */
+.product-publisher {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  border-left: 3px solid #61dafb;
+}
+
+.product-publisher h5 {
+  margin: 0 0 0.5rem 0;
+  color: #282c34;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.publisher-info {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.publisher-info p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* 商品图片容器样式 */
+.product-images {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 商品图片项样式，确保占满可用宽度 */
+.product-image-item {
+  width: calc(25% - 0.75rem); /* 每行4张图片，考虑间距 */
+  height: 150px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+/* 商品描述样式，确保占满整个宽度 */
+.product-description {
+  margin-top: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.product-description p {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* 审核按钮容器样式，右侧放置 */
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background-color: #f3f4f6;
+  border-radius: 0 8px 8px 0;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+/* 确保按钮占满可用宽度 */
+.product-actions button {
+  min-width: 80px;
+  padding: 0.75rem 1.5rem;
+  box-sizing: border-box;
+}
+
+/* 商品项悬停效果 */
+.product-item-wrapper:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 可点击的商品信息，用于展开/折叠 */
+.product-info.clickable {
+  cursor: pointer;
+}
+
+.product-info.clickable h4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 展开/折叠图标样式 */
+.expand-icon {
+  font-size: 0.8rem;
+  color: #6b7280;
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+/* 商品详细信息样式 */
+.product-details {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* 商品图片展示样式 */
+.product-images {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.product-image-item {
+  width: 150px;
+  height: 150px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 无图片提示样式 */
+.no-images {
+  color: #6b7280;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+}
+
+/* 商品描述样式 */
+.product-description {
+  margin-top: 1rem;
+}
+
+.product-description h5 {
+  margin-bottom: 0.5rem;
+  color: #282c34;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.product-description p {
+  color: #6b7280;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+/* 审核按钮样式优化，左右放置 */
+.product-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
+/* 商品项左侧内容 */
+.product-item-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* 商品图片样式 */
+.product-item-image {
+  width: 100px;
+  height: 100px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+}
+
+.product-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 商品信息样式 */
+.product-item-info {
+  flex: 1;
+}
+
+.product-item-info h3 {
+  margin-bottom: 0.5rem;
+  color: #282c34;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.product-time {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* 商品项右侧内容 */
+.product-item-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 已发布商品状态样式 - 复用已购买页面的状态样式 */
+.purchase-status.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.purchase-status.selling {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.purchase-status.offline {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.purchase-status.sold {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* 操作按钮样式 */
+.action-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* 下架按钮样式 */
+.offline-button {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.offline-button:hover {
+  background-color: #d97706;
+}
+
+/* 删除按钮样式 */
+.delete-button {
+  background-color: #ef4444;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #dc2626;
+}
+
+/* 商品状态标签样式（旧样式，保留以兼容其他页面） */
 .status-badge {
   position: absolute;
   top: 10px;
@@ -455,8 +831,8 @@ body {
 .products-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
 }
 
 .product-card {
@@ -483,6 +859,35 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+.product-info {
+  padding: 0.6rem;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 80px;
+}
+
+.product-info h4 {
+  margin-bottom: 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #282c34;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-price {
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  color: #dc2626 !important;
+  font-family: 'SimHei', '黑体', sans-serif !important;
+  margin: 0.2rem 0 0 !important;
+  text-decoration: none !important;
 }
 
 .product-image img {
@@ -513,25 +918,16 @@ body {
   font-size: 1.1rem;
   font-weight: 600;
   color: #282c34;
+  text-decoration: none;
 }
 
 .product-price {
-  font-size: 1.3rem;
+  font-size: 1.8rem;
   font-weight: bold;
   color: #dc2626;
   margin-bottom: 0.5rem;
-}
-
-.product-description {
-  flex: 1;
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin-bottom: 1rem;
-  line-height: 1.5;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  font-family: 'SimHei', '黑体', sans-serif;
+  text-decoration: none;
 }
 
 .product-meta {
@@ -539,6 +935,36 @@ body {
   justify-content: space-between;
   font-size: 0.8rem;
   color: #9ca3af;
+  text-decoration: none;
+  margin-top: 0.5rem;
+}
+
+/* 确保价格样式正确应用 */
+.product-card .product-price {
+  font-size: 1.8rem !important;
+  font-weight: bold !important;
+  color: #dc2626 !important;
+  font-family: 'SimHei', '黑体', sans-serif !important;
+  margin: 0.5rem 0 0.5rem 0 !important;
+  text-decoration: none !important;
+}
+
+/* 移除所有下划线 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 确保分类筛选中的文字没有下划线 */
+.category-filter a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 确保分类项中的文字没有下划线 */
+.category-item a {
+  text-decoration: none;
+  color: inherit;
 }
 
 /* 已售出标签样式 */
@@ -1320,6 +1746,89 @@ body {
 .admin-user-management h2 {
   color: #333;
   margin-bottom: 20px;
+}
+
+/* 搜索容器样式 */
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.search-select:focus {
+  outline: none;
+  border-color: #61dafb;
+  box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.2);
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 300px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #61dafb;
+  box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.2);
+}
+
+.btn-search {
+  padding: 8px 16px;
+  background-color: #61dafb;
+  color: #282c34;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-search:hover {
+  background-color: #4dabf7;
+}
+
+.btn-clear {
+  padding: 8px 16px;
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-clear:hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+/* 无结果提示样式 */
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  margin-top: 20px;
 }
 
 .user-table-container {

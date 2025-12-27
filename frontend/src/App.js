@@ -18,6 +18,8 @@ import AdminReviewManagement from './pages/AdminReviewManagement';
 import AlipayPay from './pages/AlipayPay';
 // 导入用户API
 import { applyForMerchant } from './api/userApi';
+// 导入确认弹窗组件
+import ConfirmModal from './components/ConfirmModal';
 
 // 根据用户类型重定向首页
 const HomeRedirect = () => {
@@ -47,6 +49,12 @@ const Navigation = () => {
 
   // 退出登录
   const handleLogout = () => {
+    // 显示确认弹窗
+    setShowLogoutConfirmModal(true);
+  };
+  
+  // 确认退出登录
+  const confirmLogout = () => {
     // 清除本地存储的用户信息
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -54,10 +62,21 @@ const Navigation = () => {
     setUser(null);
     // 跳转到登录页面
     navigate('/login');
+    // 关闭弹窗
+    setShowLogoutConfirmModal(false);
+  };
+  
+  // 取消退出登录
+  const cancelLogout = () => {
+    // 关闭弹窗
+    setShowLogoutConfirmModal(false);
   };
 
   // 商家申请弹窗状态
   const [showMerchantApplicationModal, setShowMerchantApplicationModal] = useState(false);
+  
+  // 退出登录确认弹窗状态
+  const [showLogoutConfirmModal, setShowLogoutConfirmModal] = useState(false);
 
   // 处理申请成为商家
   const handleApplyMerchant = () => {
@@ -188,6 +207,17 @@ const Navigation = () => {
               </div>
             </div>
         )}
+        
+        {/* 退出登录确认弹窗 */}
+        <ConfirmModal
+          isVisible={showLogoutConfirmModal}
+          title="退出登录"
+          message="确定退出登录吗？"
+          onConfirm={confirmLogout}
+          onCancel={cancelLogout}
+          confirmText="确定"
+          cancelText="取消"
+        />
       </header>
   );
 };

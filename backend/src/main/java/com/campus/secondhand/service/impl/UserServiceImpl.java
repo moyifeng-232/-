@@ -7,6 +7,7 @@ import com.campus.secondhand.mapper.UserMapper;
 import com.campus.secondhand.service.UserService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -129,6 +130,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 将用户状态设置为待审核
         user.setStatus(0);
         return updateById(user);
+    }
+
+    @Override
+    public List<User> searchUsers(String searchType, String keyword) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        
+        // 根据搜索类型添加查询条件
+        switch (searchType) {
+            case "id":
+                try {
+                    Long id = Long.parseLong(keyword);
+                    queryWrapper.eq("id", id);
+                } catch (NumberFormatException e) {
+                    // 如果ID不是数字，返回空列表
+                    return new ArrayList<>();
+                }
+                break;
+            case "username":
+                queryWrapper.like("username", keyword);
+                break;
+            case "realName":
+                queryWrapper.like("real_name", keyword);
+                break;
+            case "studentId":
+                queryWrapper.like("student_id", keyword);
+                break;
+            default:
+                // 未知搜索类型，返回空列表
+                return new ArrayList<>();
+        }
+        
+        // 按ID倒序排序
+        queryWrapper.orderByDesc("id");
+        
+        return baseMapper.selectList(queryWrapper);
     }
 
 }
