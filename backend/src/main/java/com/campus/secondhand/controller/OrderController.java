@@ -291,4 +291,29 @@ public class OrderController {
             return Result.error("取消订单失败");
         }
     }
+
+    /**
+     * 评价用户接口
+     * @param orderId 订单ID
+     * @param userId 被评价用户ID
+     * @return 评价结果
+     */
+    @PutMapping("/evaluate")
+    public Result<Boolean> evaluateUser(@RequestParam Long orderId, @RequestParam Long userId) {
+        // 1. 参数校验
+        if (orderId == null) {
+            return Result.error("订单ID不能为空");
+        }
+        if (userId == null) {
+            return Result.error("被评价用户ID不能为空");
+        }
+
+        // 2. 调用服务层处理评价
+        boolean result = orderService.evaluateUser(orderId, userId);
+        if (result) {
+            return Result.success(true, "评价成功");
+        } else {
+            return Result.error("评价失败");
+        }
+    }
 }

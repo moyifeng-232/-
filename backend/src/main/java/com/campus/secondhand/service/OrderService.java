@@ -78,4 +78,12 @@ public interface OrderService extends IService<Order> {
     boolean updateById(Order order); // 补充：继承IService后需确保该方法可访问
 
     List<Order> getPurchaseHistory(Long userId);
+    
+    /**
+     * 评价用户
+     * @param orderId 订单ID
+     * @param userId 被评价用户ID
+     * @return 评价结果
+     */
+    boolean evaluateUser(Long orderId, Long userId);
 }

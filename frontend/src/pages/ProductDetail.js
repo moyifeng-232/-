@@ -158,6 +158,15 @@ const ProductDetail = () => {
                                 立即下单
                             </button>
                         )}
+                        <button 
+                            className="contact-button" 
+                            onClick={() => {
+                                // 跳转到对话页面，并传递卖家ID
+                                navigate(`/chat?userId=${product.userId}`);
+                            }}
+                        >
+                            联系卖家
+                        </button>
                     </div>
                 </div>
             </div>

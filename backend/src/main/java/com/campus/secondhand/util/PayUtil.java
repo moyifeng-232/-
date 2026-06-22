@@ -8,9 +8,16 @@ import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.campus.secondhand.service.OrderService;
+import com.alipay.api.internal.util.AlipaySignature;
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 支付宝支付工具类（完整可运行版）
@@ -29,7 +36,7 @@ public class PayUtil {
     private final String GATEWAY_URL = "https://openapi-sandbox.dl.alipaydev.com/gateway.do";
     private final String FORMAT = "JSON";
     private final String SIGN_TYPE = "RSA2";
-    private final String NOTIFY_URL = "http://de96d943.natappfree.cc/api/alipay/notify";
+    private final String NOTIFY_URL = "http://t9c38a67.natappfree.cc/api/alipay/notify";
     private final String RETURN_URL = "http://localhost:3000/pay-result";
 
     // 懒加载支付宝客户端
@@ -107,5 +114,41 @@ public class PayUtil {
      */
     public String sendRequestToAlipay(String outTradeNo, Number totalAmount, String subject) {
         return sendRequestToAlipay(outTradeNo, totalAmount.toString(), subject);
+    }
+
+    /**
+     * 验证支付宝回调签名（标准实现，必须替换你当前的空方法）
+     */
+    public boolean verifyAlipaySign(HttpServletRequest request) {
+        try {
+            // 1. 提取支付宝回调传递的所有参数（封装为键值对Map）
+            Map<String, String> params = new HashMap<>();
+            Map<String, String[]> requestParams = request.getParameterMap();
+
+            for (Iterator<String> iter = requestParams.keySet().iterator(); iter.hasNext(); ) {
+                String name = iter.next();
+                String[] values = requestParams.get(name);
+                String valueStr = "";
+
+                for (int i = 0; i < values.length; i++) {
+                    valueStr = (i == values.length - 1) ? valueStr + values[i] : valueStr + values[i] + ",";
+                }
+                // 去除参数值首尾空格，避免格式问题导致校验失败
+                params.put(name, valueStr.trim());
+            }
+
+            // 2. 调用支付宝SDK的标准方法进行签名验证
+            // 参数说明：请求参数Map、支付宝公钥、编码格式、签名算法（与你的配置一致）
+            return AlipaySignature.rsaCheckV1(
+                    params,
+                    ALIPAY_PUBLIC_KEY,
+                    CHARSET,
+                    SIGN_TYPE
+            );
+        } catch (Exception e) {
+            // 捕获校验过程中的异常（如参数格式错误、密钥不匹配等）
+            log.error("支付宝签名验证异常：", e);
+            return false;
+        }
     }
 }

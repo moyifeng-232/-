@@ -22,5 +22,104 @@ VALUES
 ('seller1', 'password123', '张三', '20210001', '13800138001', 1, 1),
 ('seller2', 'password123', '李四', '20210002', '13800138002', 1, 1),
 ('seller3', 'password123', '王五', '20210003', '13800138003', 1, 1),
-('seller4', 'password123', '赵六', '20210004', '13800138004', 1, 1)
+('seller4', 'password123', '赵六', '20210004', '13800138004', 1, 1),
+('admin', 'admin123', '管理员', 'admin001', '13800138000', 2, 1)
 ON DUPLICATE KEY UPDATE id = id;
+
+-- 插入示例公告
+INSERT INTO `announcement` (`title`, `content`, `image_urls`, `publisher_id`, `is_featured`, `status`) VALUES
+('平台新功能上线', '校园二手交易平台新增商品分类功能，支持多级分类浏览，欢迎大家体验！', '["https://images.pexels.com/photos/316466/pexels-photo-316466.jpeg"]', 6, 1, 1),
+('用户行为规范公告', '为了营造良好的交易环境，平台制定了新的用户行为规范，请大家遵守相关规定，共同维护平台秩序。', NULL, 6, 0, 1),
+('新年促销活动', '新年大促开始啦！全场商品八折起，购买指定商品还可获得精美礼品一份，活动时间有限，先到先得！', '["https://images.pexels.com/photos/1082320/pexels-photo-1082320.jpeg","https://images.pexels.com/photos/262666/pexels-photo-262666.jpeg"]', 6, 0, 1),
+('系统维护通知', '平台将于今晚23:00-次日凌晨2:00进行系统维护，期间部分功能可能无法正常使用，给大家带来的不便敬请谅解！', NULL, 6, 0, 0);
+
+-- 生成91条购买记录和91条商品记录
+DELIMITER //
+
+-- 生成商品记录的存储过程
+CREATE PROCEDURE GenerateTestProducts()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE max_id INT DEFAULT 110;
+    
+    -- 开始事务
+    START TRANSACTION;
+    
+    WHILE i < 91 DO
+        -- 插入商品记录
+        INSERT INTO product (
+            id, user_id, title, description, price, category_id, status, image_urls, view_count, create_time
+        ) VALUES (
+            max_id + i, 
+            FLOOR(1 + (RAND() * 69)), -- user_id在1~69之间随机
+            'TEST', 
+            'TEST', 
+            500.00, 
+            11, -- 固定分类
+            2, -- 状态为下架
+            '[]', -- 无图片
+            0, -- 浏览量为0
+            DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 180) DAY) -- 过去6个月内的随机时间
+        );
+        
+        SET i = i + 1;
+    END WHILE;
+    
+    -- 提交事务
+    COMMIT;
+END //
+
+-- 生成订单记录的存储过程
+CREATE PROCEDURE GenerateTestOrders()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE max_id INT DEFAULT 110;
+    DECLARE buyer_id INT;
+    DECLARE seller_id INT;
+    DECLARE order_time DATETIME;
+    
+    -- 开始事务
+    START TRANSACTION;
+    
+    WHILE i < 91 DO
+        -- 生成不同的buyer_id和seller_id
+        SET buyer_id = FLOOR(1 + (RAND() * 69));
+        SET seller_id = FLOOR(1 + (RAND() * 69));
+        
+        -- 确保buyer_id和seller_id不同
+        WHILE buyer_id = seller_id DO
+            SET seller_id = FLOOR(1 + (RAND() * 69));
+        END WHILE;
+        
+        -- 生成过去6个月内的随机时间
+        SET order_time = DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 180) DAY);
+        
+        -- 插入订单记录
+        INSERT INTO `order` (
+            order_no, buyer_id, seller_id, product_id, total_amount, status, create_time
+        ) VALUES (
+            CONCAT('ORDER_', DATE_FORMAT(order_time, '%Y%m%d'), '_', LPAD(i, 4, '0')), -- 生成订单号
+            buyer_id, 
+            seller_id, 
+            max_id + i, -- product_id从110开始增长
+            500.00, -- 价格均为500
+            1, -- 订单状态为已完成
+            order_time
+        );
+        
+        SET i = i + 1;
+    END WHILE;
+    
+    -- 提交事务
+    COMMIT;
+END //
+
+-- 调用存储过程生成数据
+CALL GenerateTestProducts();
+CALL GenerateTestOrders();
+
+-- 删除存储过程
+DROP PROCEDURE IF EXISTS GenerateTestProducts;
+DROP PROCEDURE IF EXISTS GenerateTestOrders;
+
+DELIMITER ;

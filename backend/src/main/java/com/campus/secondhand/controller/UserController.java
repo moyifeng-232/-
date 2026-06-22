@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户Controller
@@ -109,12 +110,62 @@ public class UserController {
 
     /**
      * 更新用户信息
-     * @param user 用户信息
+     * @param request 用户信息更新请求
      * @return 更新结果
      */
     @PutMapping("/update")
-    public Result updateUserInfo(@RequestBody User user) {
-        boolean result = userService.updateUserInfo(user);
+    public Result updateUserInfo(@RequestBody Map<String, Object> request) {
+        // 从请求中获取参数
+        Long id = Long.parseLong(request.get("id").toString());
+        String username = (String) request.get("username");
+        String phone = (String) request.get("phone");
+        String email = (String) request.get("email");
+        String profilePicture = (String) request.get("profilePicture");
+        String oldPassword = (String) request.get("oldPassword");
+        String password = (String) request.get("password");
+        
+        // 获取当前用户信息
+        User currentUser = userService.getById(id);
+        if (currentUser == null) {
+            return Result.error("用户不存在");
+        }
+        
+        // 检查用户名是否已被其他用户使用
+        if (username != null && !username.equals(currentUser.getUsername())) {
+            User existingUser = userService.findByUsername(username);
+            if (existingUser != null) {
+                return Result.error("用户名已存在");
+            }
+        }
+        
+        // 如果需要修改密码
+        if (oldPassword != null && password != null) {
+            // 验证旧密码是否正确
+            if (!currentUser.getPassword().equals(oldPassword)) {
+                return Result.error("旧密码不正确");
+            }
+            // 更新密码
+            currentUser.setPassword(password);
+        } else if (password != null) {
+            // 只提供了新密码，没有提供旧密码
+            return Result.error("修改密码时请输入旧密码");
+        }
+        
+        // 更新其他用户信息
+        if (username != null) {
+            currentUser.setUsername(username);
+        }
+        if (phone != null) {
+            currentUser.setPhone(phone);
+        }
+        if (email != null) {
+            currentUser.setEmail(email);
+        }
+        if (profilePicture != null) {
+            currentUser.setProfilePicture(profilePicture);
+        }
+        
+        boolean result = userService.updateById(currentUser);
         if (result) {
             return Result.success("更新成功");
         } else {

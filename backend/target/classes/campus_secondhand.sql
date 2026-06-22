@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS `user` (
     `user_type` TINYINT NOT NULL DEFAULT 0 COMMENT '用户类型：0普通用户，1商家用户，2管理员',
     `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态：0待审核，1正常，2禁用',
     `credit_level` INT NOT NULL DEFAULT 0 COMMENT '信誉等级',
-    `balance` DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '账户余额（沙箱模拟）',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`)
@@ -63,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `order` (
     `seller_id` BIGINT NOT NULL COMMENT '卖家ID',
     `product_id` BIGINT NOT NULL COMMENT '商品ID',
     `total_amount` DECIMAL(10,2) NOT NULL COMMENT '订单金额',
-    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '订单状态：0待支付，1待发货，2待收货，3已完成，4已取消，5已支付',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '订单状态：0待支付，1已完成，2已取消，3已退货',
     `pay_time` DATETIME COMMENT '支付时间',
     `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除：0未删，1已删（软删除）',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -115,11 +114,16 @@ CREATE TABLE IF NOT EXISTS `announcement` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `title` VARCHAR(100) NOT NULL COMMENT '公告标题',
     `content` TEXT NOT NULL COMMENT '公告内容',
+    `image_urls` JSON COMMENT '图片URLs',
     `publisher_id` BIGINT NOT NULL COMMENT '发布者ID',
+    `is_featured` TINYINT NOT NULL DEFAULT 0 COMMENT '是否重点展示：0否，1是',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0已撤销，1已发布',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx_publisher_id` (`publisher_id`)
+    KEY `idx_publisher_id` (`publisher_id`),
+    KEY `idx_is_featured` (`is_featured`),
+    KEY `idx_status` (`status`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='公告表';
 
 -- 评价表
@@ -151,12 +155,31 @@ VALUES ('电子产品', 0, 1, 1),
        ('家具', 8, 2, 2),
        ('其他', 0, 1, 4);
 
--- 插入示例用户（带余额）
-INSERT INTO `user` (`username`, `password`, `real_name`, `student_id`, `phone`, `user_type`, `status`, `balance`)
+-- 插入示例用户
+INSERT INTO `user` (`username`, `password`, `real_name`, `student_id`, `phone`, `user_type`, `status`)
 VALUES
-    ('seller1', 'password123', '张三', '20210001', '13800138001', 1, 1, 5000.00),
-    ('seller2', 'password123', '李四', '20210002', '13800138002', 1, 1, 3000.00),
-    ('seller3', 'password123', '王五', '20210003', '13800138003', 1, 1, 2000.00),
-    ('seller4', 'password123', '赵六', '20210004', '13800138004', 1, 1, 1000.00),
-    ('buyer1', 'password123', '钱七', '20210005', '13800138005', 0, 1, 8000.00)
+    ('seller1', 'password123', '张三', '20210001', '13800138001', 1, 1),
+    ('seller2', 'password123', '李四', '20210002', '13800138002', 1, 1),
+    ('seller3', 'password123', '王五', '20210003', '13800138003', 1, 1),
+    ('seller4', 'password123', '赵六', '20210004', '13800138004', 1, 1),
+    ('buyer1', 'password123', '钱七', '20210005', '13800138005', 0, 1)
     ON DUPLICATE KEY UPDATE id = id;
+
+-- 为用户表添加头像字段
+ALTER TABLE `user` 
+ADD COLUMN `profile_picture` VARCHAR(255) NOT NULL DEFAULT 'https://images.pexels.com/photos/34692672/pexels-photo-34692672.jpeg' COMMENT '用户头像URL';
+
+-- 对话消息表
+DROP TABLE IF EXISTS `chat_message`;
+CREATE TABLE IF NOT EXISTS `chat_message` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `sender_id` BIGINT NOT NULL COMMENT '发送者ID',
+    `receiver_id` BIGINT NOT NULL COMMENT '接收者ID',
+    `content` TEXT NOT NULL COMMENT '消息内容',
+    `read_status` TINYINT NOT NULL DEFAULT 0 COMMENT '已读/未读标识：0未读，1已读',
+    `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_sender_id` (`sender_id`),
+    KEY `idx_receiver_id` (`receiver_id`),
+    KEY `idx_create_time` (`create_time`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='对话消息表';

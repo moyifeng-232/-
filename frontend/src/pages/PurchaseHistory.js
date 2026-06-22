@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getPurchaseHistory, cancelOrder, returnProduct, deletePurchaseRecord } from '../api/orderApi';
+import { getPurchaseHistory, cancelOrder, returnProduct, deletePurchaseRecord, evaluateUser } from '../api/orderApi';
+import ConfirmModal from '../components/ConfirmModal';
 
 const PurchaseHistory = () => {
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [evaluatedOrders, setEvaluatedOrders] = useState(new Set());
   const navigate = useNavigate();
+  
+  // 确认点赞弹窗状态
+  const [confirmLikeModalVisible, setConfirmLikeModalVisible] = useState(false);
+  const [currentOrderId, setCurrentOrderId] = useState(null);
+  const [currentSellerId, setCurrentSellerId] = useState(null);
+  const [likeSuccess, setLikeSuccess] = useState(false);
 
   // 获取购买历史
   const fetchPurchaseHistory = async () => {
@@ -96,6 +104,44 @@ const PurchaseHistory = () => {
     navigate(`/alipay/pay?orderId=${orderId}`);
   };
 
+  // 打开点赞确认弹窗
+  const openLikeModal = (orderId, sellerId) => {
+    setCurrentOrderId(orderId);
+    setCurrentSellerId(sellerId);
+    setLikeSuccess(false);
+    setConfirmLikeModalVisible(true);
+  };
+
+  // 关闭点赞确认弹窗
+  const closeLikeModal = () => {
+    setConfirmLikeModalVisible(false);
+    setCurrentOrderId(null);
+    setCurrentSellerId(null);
+    setLikeSuccess(false);
+  };
+
+  // 确认点赞
+  const confirmLike = async () => {
+    if (!currentOrderId || !currentSellerId) {
+      closeLikeModal();
+      return;
+    }
+
+    try {
+      const response = await evaluateUser(currentOrderId, currentSellerId);
+      if (response.code === 200) {
+        setLikeSuccess(true);
+        setEvaluatedOrders(new Set(evaluatedOrders).add(currentOrderId));
+      } else {
+        alert('点赞失败：' + (response.message || '未知错误'));
+        closeLikeModal();
+      }
+    } catch (err) {
+      alert('点赞失败，请检查网络连接');
+      closeLikeModal();
+    }
+  };
+
   if (loading) {
     return <div className="loading">加载中...</div>;
   }
@@ -137,13 +183,13 @@ const PurchaseHistory = () => {
                       <span
                           className={`purchase-status ${
                               purchase.status === 0 ? 'pending' :
-                                  purchase.status === 1 ? 'paid' :
-                                      purchase.status === 2 ? 'returned' : 'cancelled'
+                                  purchase.status === 1 ? 'completed' :
+                                      purchase.status === 2 ? 'cancelled' : 'returned'
                           }`}
                       >
                   {purchase.status === 0 ? '待支付' :
-                      purchase.status === 1 ? '已支付' :
-                          purchase.status === 2 ? '已退货' : '已取消'}
+                      purchase.status === 1 ? '已完成' :
+                          purchase.status === 2 ? '已取消' : '已退货'}
                 </span>
 
                       {/* 待支付订单显示「去支付」按钮 */}
@@ -156,14 +202,24 @@ const PurchaseHistory = () => {
                           </button>
                       )}
 
-                      {/* 已支付订单显示「申请退货」按钮 */}
+                      {/* 已完成订单显示「申请退货」按钮和「评价卖家」按钮 */}
                       {purchase.status === 1 && (
-                          <button
-                              className="return-button"
-                              onClick={() => handleReturnOrder(purchase.id)}
-                          >
-                            申请退货
-                          </button>
+                          <>
+                            <button
+                                className="return-button"
+                                onClick={() => handleReturnOrder(purchase.id)}
+                            >
+                              申请退货
+                            </button>
+                            {!evaluatedOrders.has(purchase.id) && (
+                                <button
+                                    className="evaluate-button"
+                                    onClick={() => openLikeModal(purchase.id, purchase.product.userId)}
+                                >
+                                  点赞
+                                </button>
+                            )}
+                          </>
                       )}
 
                       {/* 待支付订单显示「取消订单」按钮 */}
@@ -190,8 +246,19 @@ const PurchaseHistory = () => {
               ))}
             </div>
         )}
+
+        {/* 点赞确认弹窗 */}
+        <ConfirmModal
+          isVisible={confirmLikeModalVisible}
+          title={likeSuccess ? '点赞成功' : '确认点赞'}
+          message={likeSuccess ? '点赞成功，对方信誉值+1' : '确定要给卖家点赞吗？'}
+          onConfirm={likeSuccess ? closeLikeModal : confirmLike}
+          onCancel={closeLikeModal}
+          confirmText={likeSuccess ? '确定' : '点赞'}
+          cancelText={likeSuccess ? undefined : '取消'}
+        />
       </div>
-  );
+    );
 };
 
 export default PurchaseHistory;

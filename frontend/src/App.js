@@ -10,16 +10,26 @@ import Register from './pages/Register';
 import PurchaseHistory from './pages/PurchaseHistory';
 import PublishedProducts from './pages/PublishedProducts';
 import PublishProduct from './pages/PublishProduct';
+import AnnouncementList from './pages/AnnouncementList';
+import UserProfile from './pages/UserProfile';
+import Chat from './pages/Chat';
 // 导入管理员页面
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminReviewManagement from './pages/AdminReviewManagement';
+import AdminProductManagement from './pages/AdminProductManagement';
+import AdminAnnouncementManagement from './pages/AdminAnnouncementManagement';
+import AdminStatistics from './pages/AdminStatistics';
 // 导入支付宝支付页面
 import AlipayPay from './pages/AlipayPay';
 // 导入用户API
 import { applyForMerchant } from './api/userApi';
 // 导入确认弹窗组件
 import ConfirmModal from './components/ConfirmModal';
+// 导入重点公告弹窗组件
+import FeaturedAnnouncementModal from './components/FeaturedAnnouncementModal';
+// 导入公告API
+import { getFeaturedAnnouncement } from './api/announcementApi';
 
 // 根据用户类型重定向首页
 const HomeRedirect = () => {
@@ -37,6 +47,8 @@ const HomeRedirect = () => {
 // 导航组件，包含登录状态管理
 const Navigation = () => {
   const [user, setUser] = useState(null);
+  const [featuredAnnouncement, setFeaturedAnnouncement] = useState(null);
+  const [showFeaturedModal, setShowFeaturedModal] = useState(false);
   const navigate = useNavigate();
 
   // 检查用户是否已登录
@@ -46,6 +58,34 @@ const Navigation = () => {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  // 获取重点公告
+  useEffect(() => {
+    const fetchFeaturedAnnouncement = async () => {
+      try {
+        const response = await getFeaturedAnnouncement();
+        if (response && response.code === 200 && response.data) {
+          // 检查是否已经显示过该公告
+          const lastShownId = localStorage.getItem('lastShownAnnouncementId');
+          if (lastShownId !== response.data.id.toString()) {
+            setFeaturedAnnouncement(response.data);
+            setShowFeaturedModal(true);
+            // 存储已显示的公告ID
+            localStorage.setItem('lastShownAnnouncementId', response.data.id.toString());
+          }
+        }
+      } catch (err) {
+        console.error('获取重点公告失败:', err);
+      }
+    };
+
+    fetchFeaturedAnnouncement();
+  }, []);
+
+  // 关闭重点公告弹窗
+  const handleCloseFeaturedModal = () => {
+    setShowFeaturedModal(false);
+  };
 
   // 退出登录
   const handleLogout = () => {
@@ -127,14 +167,20 @@ const Navigation = () => {
             校园二手交易平台
           </Link>
           <nav className="nav-menu">
-            {/* 根据用户类型显示不同的首页 */}
-            {user && user.userType === 2 ? (
-                <Link to="/admin">首页</Link>
-            ) : (
-                <Link to="/home">首页</Link>
-            )}
+              {/* 根据用户类型显示不同的首页 */}
+              {user && user.userType === 2 ? (
+                  <>
+                      <Link to="/admin">控制面板</Link>
+                      <Link to="/admin/statistics">统计与分析</Link>
+                  </>
+              ) : (
+                  <Link to="/home">首页</Link>
+              )}
 
-            {user ? (
+              {/* 所有用户都可以访问公告栏 */}
+              <Link to="/announcements">公告栏</Link>
+
+              {user ? (
                 // 已登录状态
                 <>
                   {/* 非管理员用户显示已购买页面 */}
@@ -150,16 +196,20 @@ const Navigation = () => {
                       </>
                   )}
 
-                  {/* 管理员用户显示管理页面 */}
-                  {user.userType === 2 && (
-                      <>
-                        <Link to="/admin/users">用户管理</Link>
-                        <Link to="/admin/reviews">审核管理</Link>
-                      </>
-                  )}
+                  {/* 管理员用户不再显示单独的管理页面按钮，统一通过控制面板访问 */}
+
+                  {/* 所有已登录用户显示对话按钮 */}
+                  <Link to="/chat" className="chat-link">对话</Link>
 
                   <div className="user-info">
-                    <span className="welcome-message">欢迎您，{user.username}</span>
+                    <Link to="/profile" className="user-profile-link">
+                      <img 
+                        src={user.profilePicture || 'https://images.pexels.com/photos/34692672/pexels-photo-34692672.jpeg'} 
+                        alt="用户头像" 
+                        className="user-avatar"
+                      />
+                      <span className="username">{user.username}</span>
+                    </Link>
 
                     {/* 普通用户显示成为商家按钮 */}
                     {user.userType === 0 && (
@@ -218,6 +268,13 @@ const Navigation = () => {
           confirmText="确定"
           cancelText="取消"
         />
+        
+        {/* 重点公告弹窗 */}
+        <FeaturedAnnouncementModal
+          isVisible={showFeaturedModal}
+          announcement={featuredAnnouncement}
+          onClose={handleCloseFeaturedModal}
+        />
       </header>
   );
 };
@@ -243,6 +300,12 @@ const App = () => {
               <Route path="/purchases" element={<PurchaseHistory />} />
               <Route path="/published" element={<PublishedProducts />} />
               <Route path="/publish" element={<PublishProduct />} />
+              {/* 公告栏路由 */}
+              <Route path="/announcements" element={<AnnouncementList />} />
+              {/* 个人信息路由 */}
+              <Route path="/profile" element={<UserProfile />} />
+              {/* 对话路由 */}
+              <Route path="/chat" element={<Chat />} />
               {/* 支付宝支付路由 */}
               <Route path="/alipay/pay" element={<AlipayPay />} />
 
@@ -250,6 +313,9 @@ const App = () => {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUserManagement />} />
               <Route path="/admin/reviews" element={<AdminReviewManagement />} />
+              <Route path="/admin/products" element={<AdminProductManagement />} />
+              <Route path="/admin/announcements" element={<AdminAnnouncementManagement />} />
+              <Route path="/admin/statistics" element={<AdminStatistics />} />
             </Routes>
           </main>
 

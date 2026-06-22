@@ -2,7 +2,9 @@ package com.campus.secondhand.controller;
 
 import com.campus.secondhand.common.Result;
 import com.campus.secondhand.entity.Order;
+import com.campus.secondhand.entity.Product;
 import com.campus.secondhand.service.OrderService;
+import com.campus.secondhand.service.ProductService;
 import com.campus.secondhand.util.PayUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,9 @@ public class AliPayController {
 
     @Autowired
     private OrderService orderService;
+    
+    @Autowired
+    private ProductService productService;
 
     /**
      * 生成支付订单（返回支付宝支付页面HTML）
@@ -81,10 +86,10 @@ public class AliPayController {
 
         // 2. 校验支付状态
         if ("TRADE_SUCCESS".equals(tradeStatus)) {
-            // 3. 更新订单状态为已支付（待发货）
+            // 3. 更新订单状态为已完成（1=已完成）
             boolean updateResult = orderService.updateOrderStatus(
                     orderService.getOrderByOrderNo(outTradeNo).getId(),
-                    1 // 1=待发货
+                    1 // 1=已完成
             );
             if (updateResult) {
                 result.put("success", true);
@@ -120,10 +125,17 @@ public class AliPayController {
             // 2. 仅处理支付成功的通知
             if ("TRADE_SUCCESS".equals(tradeStatus)) {
                 log.info("支付宝异步通知：订单{}支付成功", outTradeNo);
-                // 3. 更新订单状态
+                // 3. 更新订单状态为已完成
                 Order order = orderService.getOrderByOrderNo(outTradeNo);
                 if (order != null) {
+                    // 更新订单状态为已完成
                     orderService.updateOrderStatus(order.getId(), 1);
+                    // 获取商品并更新状态为已售出(3)
+                    Product product = productService.getProductById(order.getProductId());
+                    if (product != null) {
+                        product.setStatus(3); // 设置为已售出
+                        productService.updateProduct(product);
+                    }
                 }
             }
             // 4. 必须返回"success"，否则支付宝会重复通知
