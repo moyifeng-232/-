@@ -11,12 +11,14 @@ const ConfirmModal = ({ isVisible, title, message, onConfirm, onCancel, confirmT
         <h2>{title}</h2>
         <p>{message}</p>
         <div className="modal-buttons">
-          <button 
-            className="modal-cancel-button"
-            onClick={onCancel}
-          >
-            {cancelText}
-          </button>
+          {cancelText && (
+            <button 
+              className="modal-cancel-button"
+              onClick={onCancel}
+            >
+              {cancelText}
+            </button>
+          )}
           <button 
             className="modal-confirm-button"
             onClick={onConfirm}

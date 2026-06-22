@@ -50,7 +50,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean updateUserInfo(User user) {
-        return updateById(user);
+        // 获取当前用户信息
+        User currentUser = baseMapper.selectById(user.getId());
+        if (currentUser == null) {
+            return false;
+        }
+        
+        // 检查用户名是否已被其他用户使用
+        if (user.getUsername() != null && !user.getUsername().equals(currentUser.getUsername())) {
+            if (findByUsername(user.getUsername()) != null) {
+                return false;
+            }
+        }
+        
+        // 只更新非空字段
+        if (user.getUsername() != null) {
+            currentUser.setUsername(user.getUsername());
+        }
+        if (user.getPhone() != null) {
+            currentUser.setPhone(user.getPhone());
+        }
+        if (user.getEmail() != null) {
+            currentUser.setEmail(user.getEmail());
+        }
+        if (user.getProfilePicture() != null) {
+            currentUser.setProfilePicture(user.getProfilePicture());
+        }
+        
+        return updateById(currentUser);
     }
 
     @Override

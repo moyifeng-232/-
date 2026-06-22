@@ -69,6 +69,11 @@ public class User implements Serializable {
     private Integer creditLevel;
 
     /**
+     * 用户头像URL
+     */
+    private String profilePicture;
+
+    /**
      * 创建时间
      */
     private Date createTime;

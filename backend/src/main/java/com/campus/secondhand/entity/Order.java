@@ -50,7 +50,7 @@ public class Order implements Serializable {
     private BigDecimal totalAmount;
 
     /**
-     * 订单状态：0待支付，1待发货，2待收货，3已完成，4已取消，5已退货
+     * 订单状态：0待支付，1已完成，2已取消，3已退货
      */
     private Integer status;
 

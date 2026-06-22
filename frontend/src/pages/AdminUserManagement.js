@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllUsers, updateUserStatus, searchUsers } from '../api/userApi';
+import ConfirmModal from '../components/ConfirmModal';
 
 const AdminUserManagement = () => {
   // 使用useState存储用户信息，避免每次渲染都创建新对象
@@ -15,6 +16,12 @@ const AdminUserManagement = () => {
   const [searchType, setSearchType] = useState('id');
   const [keyword, setKeyword] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  
+  // 弹窗相关状态
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [currentUserStatus, setCurrentUserStatus] = useState(1);
+  const [actionType, setActionType] = useState('');
   
   // 监听localStorage中用户信息的变化
   useEffect(() => {
@@ -95,29 +102,42 @@ const AdminUserManagement = () => {
     fetchUsers();
   };
   
-  // 处理封号/解封
-  const handleToggleUserStatus = async (userId, currentStatus) => {
+  // 处理封号/解封按钮点击，显示确认弹窗
+  const handleToggleUserStatus = (userId, currentStatus) => {
+    setSelectedUserId(userId);
+    setCurrentUserStatus(currentStatus);
+    const action = currentStatus === 1 ? '封号' : '解封';
+    setActionType(action);
+    setShowConfirmModal(true);
+  };
+  
+  // 确认封号/解封
+  const confirmToggleUserStatus = async () => {
     try {
-      const newStatus = currentStatus === 1 ? 2 : 1;
+      const newStatus = currentUserStatus === 1 ? 2 : 1;
       // 调用后端API更新用户状态
-      const response = await updateUserStatus(userId, newStatus);
+      const response = await updateUserStatus(selectedUserId, newStatus);
       if (response && response.code === 200) {
         // 更新本地状态
         setUsers(prevUsers => 
           prevUsers.map(user => 
-            user.id === userId ? { ...user, status: newStatus } : user
+            user.id === selectedUserId ? { ...user, status: newStatus } : user
           )
         );
-        // 显示操作结果
-        const action = newStatus === 2 ? '封号' : '解封';
-        alert(`用户${action}成功`);
       } else {
         throw new Error(response.message || '操作失败');
       }
     } catch (err) {
       console.error('更新用户状态失败:', err);
       alert('操作失败，请稍后重试');
+    } finally {
+      setShowConfirmModal(false);
     }
+  };
+  
+  // 取消封号/解封
+  const cancelToggleUserStatus = () => {
+    setShowConfirmModal(false);
   };
   
   // 检查用户是否为管理员
@@ -220,6 +240,17 @@ const AdminUserManagement = () => {
           )}
         </div>
       )}
+      
+      {/* 封号/解封确认弹窗 */}
+      <ConfirmModal
+        isVisible={showConfirmModal}
+        title={`${actionType}确认`}
+        message={`确定要${actionType}该用户吗？`}
+        onConfirm={confirmToggleUserStatus}
+        onCancel={cancelToggleUserStatus}
+        confirmText="确定"
+        cancelText="取消"
+      />
     </div>
   );
 };

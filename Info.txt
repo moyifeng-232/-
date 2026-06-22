@@ -1,0 +1,583 @@
+# 校园二手交易平台模块实现文档
+
+## 项目概况
+校园二手交易平台是一个基于React+Spring Boot的全栈Web应用，用于校园内师生之间的二手商品交易。系统采用前后端分离架构，包含用户管理、商品管理、订单管理、统计分析等核心功能。
+
+## 目录结构
+```
+校园二手交易平台-v2/
+├── backend/           # 后端Spring Boot项目
+├── frontend/          # 前端React项目
+└── Info.txt           # 模块实现文档
+```
+
+---
+
+## 1. 用户管理模块
+
+### 1.1 功能描述
+- 用户注册、登录、信息维护
+- 管理员对用户信息的审核与管理
+- 商家用户申请与审核
+
+### 1.2 技术实现
+**前端实现**：
+- 注册页面：`pages/Register.js`
+- 登录页面：`pages/Login.js`
+- 个人中心：`pages/UserProfile.js`
+- 管理员用户管理：`pages/AdminUserManagement.js`
+
+**后端实现**：
+- Controller：`UserController.java`
+- Service：`UserService.java`、`UserServiceImpl.java`
+- Mapper：`UserMapper.java`
+- 实体类：`User.java`
+
+### 1.3 核心流程
+1. **用户注册**：
+   - 前端验证表单数据
+   - 调用后端API `/api/user/register`
+   - 后端进行密码加密存储
+   - 返回注册结果
+
+2. **用户登录**：
+   - 前端发送用户名和密码
+   - 后端验证并生成JWT令牌
+   - 前端存储令牌和用户信息到localStorage
+   - 跳转到首页
+
+3. **管理员审核**：
+   - 管理员查看待审核用户列表
+   - 审核通过/拒绝用户申请
+   - 更新用户状态
+
+### 1.4 关键代码
+```java
+// UserServiceImpl.java - 注册功能
+public Result register(User user) {
+    // 密码加密
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    // 设置默认状态
+    user.setStatus(1);
+    // 保存用户
+    boolean saveResult = save(user);
+    if (saveResult) {
+        return Result.success(null, "注册成功");
+    } else {
+        return Result.error("注册失败");
+    }
+}
+```
+
+---
+
+## 2. 商品管理模块
+
+### 2.1 功能描述
+- 商家用户发布、编辑、下架二手物品信息
+- 支持多图上传与文本描述
+- 普通用户浏览、搜索、筛选商品
+
+### 2.2 技术实现
+**前端实现**：
+- 商品列表页面：`pages/ProductList.js`
+- 商品详情页面：`pages/ProductDetail.js`
+- 发布商品页面：`pages/PublishProduct.js`
+- 已发布商品页面：`pages/PublishedProducts.js`
+
+**后端实现**：
+- Controller：`ProductController.java`
+- Service：`ProductService.java`、`ProductServiceImpl.java`
+- Mapper：`ProductMapper.java`
+- 实体类：`Product.java`
+
+### 2.3 核心流程
+1. **商品发布**：
+   - 商家填写商品信息（标题、描述、价格、分类等）
+   - 上传商品图片
+   - 调用后端API `/api/product/create`
+   - 商品进入待审核状态
+
+2. **商品浏览**：
+   - 普通用户访问首页
+   - 浏览商品列表，支持分类筛选和搜索
+   - 点击商品查看详情
+
+3. **商品管理**：
+   - 商家在已发布页面管理商品
+   - 支持下架、编辑、删除操作
+   - 管理员在后台审核商品
+
+### 2.4 关键代码
+```java
+// ProductServiceImpl.java - 商品发布
+public Result createProduct(Product product) {
+    // 设置默认值
+    product.setStatus(0); // 待审核
+    product.setViewCount(0);
+    // 保存商品
+    boolean saveResult = save(product);
+    if (saveResult) {
+        return Result.success(product.getId(), "商品发布成功，等待审核");
+    } else {
+        return Result.error("商品发布失败");
+    }
+}
+```
+
+---
+
+## 3. 交易沟通模块
+
+### 3.1 功能描述
+- 用户与其他用户之间通过站内信进行交易细节沟通
+- 一对一沟通机制
+
+### 3.2 技术实现
+**前端实现**：
+- 对话页面：`pages/Chat.js`
+
+**后端实现**：
+- Controller：`ChatController.java`
+- Service：`ChatService.java`、`ChatServiceImpl.java`
+- 实体类：`Chat.java`、`ChatMessage.java`
+
+### 3.3 核心流程
+1. **发起对话**：
+   - 用户在商品详情页点击"发起对话"
+   - 跳转到对话页面
+   - 系统自动创建对话记录
+
+2. **发送消息**：
+   - 用户输入消息内容
+   - 点击发送按钮
+   - 前端调用API `/api/chat/send`
+   - 消息存储到数据库
+
+3. **查看消息**：
+   - 用户进入对话页面
+   - 加载历史消息
+   - 实时接收新消息
+
+---
+
+## 4. 订单管理模块
+
+### 4.1 功能描述
+- 用户下单
+- 商家审核订单
+- 记录交易状态流转
+
+### 4.2 技术实现
+**前端实现**：
+- 购买记录页面：`pages/PurchaseHistory.js`
+- 已发布商品页面：`pages/PublishedProducts.js`（包含已售出订单）
+
+**后端实现**：
+- Controller：`OrderController.java`
+- Service：`OrderService.java`、`OrderServiceImpl.java`
+- Mapper：`OrderMapper.java`
+- 实体类：`Order.java`
+
+### 4.3 核心流程
+1. **创建订单**：
+   - 用户在商品详情页点击"立即购买"
+   - 填写收货信息
+   - 调用API `/api/order/create`
+   - 生成待支付订单
+
+2. **订单支付**：
+   - 跳转到支付页面
+   - 选择支付方式（支付宝）
+   - 支付完成后更新订单状态
+
+3. **订单状态流转**：
+   - 待支付 → 已支付 → 待发货 → 待收货 → 已完成
+   - 支持取消订单和退货申请
+
+### 4.4 关键代码
+```java
+// OrderServiceImpl.java - 创建订单
+public Long createOrder(Order order) {
+    // 生成订单号
+    String orderNo = generateOrderNo();
+    order.setOrderNo(orderNo);
+    // 设置默认状态
+    order.setStatus(0); // 待支付
+    // 保存订单
+    save(order);
+    return order.getId();
+}
+```
+
+---
+
+## 5. 信誉评价模块
+
+### 5.1 功能描述
+- 交易完成后，双方进行互评
+- 生成信誉度分数与评价记录
+
+### 5.2 技术实现
+**前端实现**：
+- 购买记录页面：`pages/PurchaseHistory.js`（买家评价卖家）
+- 已发布商品页面：`pages/PublishedProducts.js`（卖家评价买家）
+
+**后端实现**：
+- Controller：`OrderController.java`（新增 `/api/order/evaluate` 接口）
+- Service：`OrderServiceImpl.java`（新增 `evaluateUser` 方法）
+
+### 5.3 核心流程
+1. **评价触发**：
+   - 订单状态变为"已完成"
+   - 双方可以互相评价
+
+2. **评价操作**：
+   - 点击"点赞"按钮
+   - 显示确认弹窗
+   - 确认后调用API `/api/order/evaluate`
+   - 更新对方信誉值
+
+3. **信誉值计算**：
+   - 每次评价成功，对方信誉值+1
+   - 信誉值存储在用户表的 `creditLevel` 字段
+
+### 5.4 关键代码
+```java
+// OrderServiceImpl.java - 评价用户
+public boolean evaluateUser(Long orderId, Long userId) {
+    // 获取被评价用户
+    User user = userService.getById(userId);
+    if (user == null) {
+        return false;
+    }
+    
+    // 更新用户信誉值
+    user.setCreditLevel(user.getCreditLevel() + 1);
+    user.setUpdateTime(new Date());
+    
+    // 保存更新
+    return userService.updateById(user);
+}
+```
+
+---
+
+## 6. 公告管理模块
+
+### 6.1 功能描述
+- 管理员发布、编辑、删除校园二手交易相关公告与新闻
+
+### 6.2 技术实现
+**前端实现**：
+- 公告列表页面：`pages/AnnouncementList.js`
+- 管理员公告管理：`pages/AdminAnnouncementManagement.js`
+
+**后端实现**：
+- Controller：`AnnouncementController.java`
+- Service：`AnnouncementService.java`、`AnnouncementServiceImpl.java`
+- 实体类：`Announcement.java`
+
+### 6.3 核心流程
+1. **发布公告**：
+   - 管理员填写公告标题、内容、图片
+   - 调用API `/api/announcement/create`
+   - 公告保存到数据库
+
+2. **管理公告**：
+   - 管理员查看公告列表
+   - 支持编辑、删除操作
+   - 可设置是否为重点公告
+
+3. **公告展示**：
+   - 首页展示重点公告
+   - 公告列表页面展示所有公告
+   - 用户点击查看详情
+
+---
+
+## 7. 数据统计模块
+
+### 7.1 功能描述
+- 管理员统计交易总量、热门商品类别
+- 统计商品去向等数据
+- 环境效益计算
+
+### 7.2 技术实现
+**前端实现**：
+- 统计与分析页面：`pages/AdminStatistics.js`
+- 使用Chart.js绘制图表
+
+**后端实现**：
+- Controller：`StatisticsController.java`
+- Service：`StatisticsService.java`、`StatisticsServiceImpl.java`
+
+### 7.3 核心功能
+1. **交易统计**：
+   - 统计指定时间范围内的交易总量
+   - 计算总交易金额
+   - 按月份统计交易趋势
+
+2. **商品分类统计**：
+   - 统计不同类别的商品数量
+   - 生成热门商品类别分布
+
+3. **环境效益计算**：
+   - 根据商品分类和数量计算碳减排量
+   - 不同分类设置不同的减排系数
+   - 生成环境效益明细
+
+### 7.4 关键代码
+```java
+// StatisticsServiceImpl.java - 获取统计数据
+public Result getStatisticsData(Date startDate, Date endDate) {
+    // 1. 获取交易总量和总金额
+    // 2. 统计热门商品类别分布
+    // 3. 计算环境效益
+    // 4. 组装返回结果
+    Map<String, Object> resultData = new HashMap<>();
+    resultData.put("totalTransactions", totalTransactions);
+    resultData.put("totalAmount", totalAmount);
+    resultData.put("categoryDistribution", categoryCountMap);
+    resultData.put("environmentalBenefit", totalEnvironmentalBenefit);
+    return Result.success(resultData, "获取统计数据成功");
+}
+```
+
+---
+
+## 技术栈
+
+### 前端
+- React 19.2.3
+- React Router 7.10.1
+- Axios 1.13.2
+- Chart.js 4.5.1
+- React-Chartjs-2 5.3.1
+
+### 后端
+- Spring Boot 2.7.x
+- MyBatis Plus
+- MySQL
+- Maven
+
+---
+
+## MVC架构设计
+
+### 1. 架构概述
+本项目采用前后端分离的MVC（Model-View-Controller）架构设计模式。前端采用React的MVVM（Model-View-ViewModel）架构，后端采用传统的MVC架构，通过RESTful API进行数据交互。
+
+### 2. 前端MVVM架构
+
+#### 2.1 各层职责
+
+| 层       | 职责描述                                                                 | 实现文件/目录                          |
+|---------|----------------------------------------------------------------------|-----------------------------------|
+| **View** | 视图层，负责UI展示和用户交互                                                  | `pages/`目录下的所有页面组件，如`Login.js`、`ProductList.js`等 |
+| **ViewModel** | 视图模型层，连接View和Model，处理数据绑定和业务逻辑                              | React组件的state和props，自定义Hooks       |
+| **Model** | 模型层，负责数据管理和业务逻辑，包括API调用、数据处理等                                | `api/`目录下的API封装，如`userApi.js`、`productApi.js`等 |
+
+#### 2.2 前端数据流
+1. 用户在View层进行交互操作
+2. ViewModel层接收用户操作，调用Model层获取数据
+3. Model层通过API请求后端数据
+4. 后端返回数据后，Model层处理数据并传递给ViewModel层
+5. ViewModel层更新state，触发View层重新渲染
+
+### 3. 后端MVC架构
+
+#### 3.1 各层职责
+
+| 层               | 职责描述                                                                 | 实现文件/目录                          |
+|-----------------|----------------------------------------------------------------------|-----------------------------------|
+| **Controller**  | 控制层，处理HTTP请求，接收和验证请求参数，调用Service层处理业务逻辑，返回响应结果             | `controller/`目录下的所有Controller类，如`UserController.java`、`ProductController.java`等 |
+| **Service**     | 业务逻辑层，实现核心业务逻辑，调用Mapper层访问数据库，处理数据转换和业务规则                  | `service/`目录下的Service接口和实现类，如`UserService.java`、`UserServiceImpl.java`等 |
+| **Mapper/DAO**  | 数据访问层，负责数据库操作，定义SQL语句或映射关系，封装数据库访问逻辑                          | `mapper/`目录下的Mapper接口和XML映射文件，如`UserMapper.java`、`OrderMapper.xml`等 |
+| **Entity**      | 实体层，对应数据库表结构，封装数据模型                                               | `entity/`目录下的所有实体类，如`User.java`、`Product.java`等 |
+| **DTO**         | 数据传输对象层，用于前后端数据交互，封装请求和响应数据，隔离内部实体结构                       | `dto/`目录下的DTO类，如`ProductDetailDto.java`、`PageResult.java`等 |
+
+#### 3.2 后端请求处理流程
+1. 前端发送HTTP请求到后端Controller层
+2. Controller层接收请求，验证参数合法性
+3. Controller层调用Service层的业务方法处理具体业务逻辑
+4. Service层调用Mapper层访问数据库
+5. Mapper层执行SQL语句，操作数据库
+6. 数据库返回结果给Mapper层
+7. Mapper层将结果转换为Entity对象返回给Service层
+8. Service层处理业务逻辑，转换数据格式
+9. Service层将处理结果返回给Controller层
+10. Controller层将结果封装为统一响应格式，返回给前端
+
+### 4. 前后端分离架构下的MVC协同
+- **前端**：专注于用户界面和用户体验，通过API与后端交互
+- **后端**：专注于业务逻辑和数据管理，提供RESTful API服务
+- **数据交互**：采用JSON格式进行数据传输，实现前后端解耦
+- **职责清晰**：各层职责明确，便于开发、测试和维护
+- **可扩展性**：支持前后端独立开发、部署和扩展
+
+---
+
+## 项目目录结构与文件说明
+
+### 1. 后端目录结构 (backend/)
+
+#### 1.1 根目录文件
+- **pom.xml**：Maven项目配置文件，定义项目依赖和构建规则
+- **backend.log**：系统日志文件
+- **pom.xml**：Maven项目配置文件
+
+#### 1.2 src/ 目录
+后端源代码根目录，包含所有Java代码和配置文件。
+
+##### 1.2.1 main/java/com/campus/secondhand/ 目录
+
+- **SecondHandApplication.java**：Spring Boot应用主入口类，启动整个应用
+
+- **common/**：通用组件和工具类
+  - `Result.java`：统一响应结果封装类
+
+- **config/**：配置类目录
+  - `CorsConfig.java`：跨域请求配置
+  - `MyBatisPlusConfig.java`：MyBatis Plus配置
+  - `StaticResourceConfig.java`：静态资源访问配置
+
+- **controller/**：API控制器目录，处理HTTP请求
+  - `AliPayController.java`：支付宝支付相关接口
+  - `AnnouncementController.java`：公告管理接口
+  - `CategoryController.java`：商品分类接口
+  - `ChatMessageController.java`：聊天消息接口
+  - `FileController.java`：文件上传下载接口
+  - `OrderController.java`：订单管理接口
+  - `ProductController.java`：商品管理接口
+  - `StatisticsController.java`：统计数据接口
+  - `UserController.java`：用户管理接口
+
+- **dto/**：数据传输对象目录，用于前后端数据交互
+  - `AnnouncementDto.java`：公告数据传输对象
+  - `OrderIdRequest.java`：订单ID请求对象
+  - `PageResult.java`：分页结果封装
+  - `ProductDetailDto.java`：商品详情数据传输对象
+  - `ProductReviewDto.java`：商品审核数据传输对象
+
+- **entity/**：实体类目录，对应数据库表结构
+  - `Announcement.java`：公告实体
+  - `Category.java`：商品分类实体
+  - `ChatMessage.java`：聊天消息实体
+  - `Order.java`：订单实体
+  - `Product.java`：商品实体
+  - `User.java`：用户实体
+
+- **mapper/**：MyBatis Mapper接口目录
+  - `AnnouncementMapper.java`：公告数据访问接口
+  - `CategoryMapper.java`：商品分类数据访问接口
+  - `ChatMessageMapper.java`：聊天消息数据访问接口
+  - `OrderMapper.java`：订单数据访问接口
+  - `ProductMapper.java`：商品数据访问接口
+  - `UserMapper.java`：用户数据访问接口
+
+- **service/**：业务逻辑层目录
+  - **impl/**：业务逻辑实现类
+    - `AnnouncementServiceImpl.java`：公告业务实现
+    - `CategoryServiceImpl.java`：商品分类业务实现
+    - `ChatMessageServiceImpl.java`：聊天消息业务实现
+    - `OrderServiceImpl.java`：订单业务实现
+    - `ProductServiceImpl.java`：商品业务实现
+    - `StatisticsServiceImpl.java`：统计数据业务实现
+    - `UserServiceImpl.java`：用户业务实现
+  - `AnnouncementService.java`：公告业务接口
+  - `CategoryService.java`：商品分类业务接口
+  - `ChatMessageService.java`：聊天消息业务接口
+  - `OrderService.java`：订单业务接口
+  - `ProductService.java`：商品业务接口
+  - `StatisticsService.java`：统计数据业务接口
+  - `UserService.java`：用户业务接口
+
+- **util/**：工具类目录
+  - `PayUtil.java`：支付相关工具类
+
+##### 1.2.2 main/resources/ 目录
+
+- **application.properties**：应用配置文件，包含数据库连接、服务器端口等配置
+- **campus_secondhand.sql**：数据库初始化脚本
+- **sample_products.sql**：示例商品数据脚本
+
+- **mapper/**：MyBatis XML映射文件目录
+  - `ChatMessageMapper.xml`：聊天消息SQL映射
+  - `OrderMapper.xml`：订单SQL映射
+
+#### 1.3 target/ 目录
+Maven构建输出目录，包含编译后的class文件和打包后的jar文件。
+
+#### 1.4 uploads/ 目录
+文件上传存储目录，用于保存用户上传的商品图片等文件。
+
+---
+
+### 2. 前端目录结构 (frontend/)
+
+#### 2.1 根目录文件
+- **package.json**：npm项目配置文件，定义项目依赖和脚本
+- **package-lock.json**：npm依赖锁文件，锁定依赖版本
+- **.gitignore**：Git忽略文件配置
+
+#### 2.2 public/ 目录
+静态资源目录，包含HTML模板和其他静态文件。
+
+#### 2.3 src/ 目录
+前端源代码根目录，包含所有React组件和资源文件。
+
+- **App.js**：应用主组件，定义路由和整体布局
+- **App.css**：应用全局样式
+- **index.js**：React应用入口文件
+- **index.css**：基础样式
+- **logo.svg**：应用logo
+
+- **api/**：API请求封装目录
+  - `alipayApi.js`：支付宝支付相关API
+  - `announcementApi.js`：公告相关API
+  - `categoryApi.js`：商品分类相关API
+  - `chatApi.js`：聊天相关API
+  - `orderApi.js`：订单相关API
+  - `productApi.js`：商品相关API
+  - `statisticsApi.js`：统计数据相关API
+  - `userApi.js`：用户相关API
+
+- **components/**：通用组件目录
+  - `ConfirmModal.js`：确认弹窗组件
+  - `FeaturedAnnouncementModal.js`：重点公告弹窗组件
+  - `ImageModal.js`：图片查看弹窗组件
+
+- **pages/**：页面组件目录
+  - `AdminAnnouncementManagement.js`：管理员公告管理页面
+  - `AdminDashboard.js`：管理员控制面板
+  - `AdminProductManagement.js`：管理员商品管理页面
+  - `AdminReviewManagement.js`：管理员审核管理页面
+  - `AdminStatistics.js`：管理员统计分析页面
+  - `AdminUserManagement.js`：管理员用户管理页面
+  - `AlipayPay.js`：支付宝支付页面
+  - `AnnouncementList.js`：公告列表页面
+  - `Chat.js`：聊天页面
+  - `Login.js`：登录页面
+  - `ProductDetail.js`：商品详情页面
+  - `ProductList.js`：商品列表页面
+  - `PublishedProducts.js`：已发布商品页面
+  - `PublishProduct.js`：发布商品页面
+  - `PurchaseHistory.js`：购买记录页面
+  - `Register.js`：注册页面
+  - `UserProfile.js`：个人中心页面
+
+- **utils/**：工具函数目录
+  - `axiosInstance.js`：Axios实例配置，统一处理请求拦截和响应拦截
+
+#### 2.4 node_modules/ 目录
+npm依赖包目录，包含项目所需的所有第三方库。
+
+#### 2.5 build/ 目录
+React应用构建输出目录，包含编译后的静态资源文件。
+
+---
+
+**文档生成时间**：2025-12-29
+**项目版本**：v2.0
+**文档作者**：系统自动生成

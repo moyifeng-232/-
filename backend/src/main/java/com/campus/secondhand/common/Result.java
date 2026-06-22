@@ -19,7 +19,7 @@ public class Result<T> {
         this.data = data;
     }
 
-    // 成功响应（带数据 + 自定义消息）✅ 新增
+    // 成功响应（带数据 + 自定义消息）新增
     public static <T> Result<T> success(T data, String message) {
         return new Result<>(200, message, data);
     }
@@ -34,7 +34,7 @@ public class Result<T> {
         return new Result<>(200, "操作成功", null);
     }
 
-    // 成功响应（无数据 + 自定义消息）✅ 新增（可选，提升灵活性）
+    // 成功响应（无数据 + 自定义消息）新增（可选，提升灵活性）
     public static <T> Result<T> success(String message) {
         return new Result<>(200, message, null);
     }

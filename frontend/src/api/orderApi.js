@@ -85,3 +85,13 @@ export const deletePurchaseRecord = (orderId) => {
 export const cancelOrder = (orderId) => {
   return axiosInstance.put('/order/cancel', null, { params: { orderId } });
 };
+
+/**
+ * 评价用户
+ * @param {number} orderId - 订单ID
+ * @param {number} userId - 被评价用户ID
+ * @returns {Promise} - 评价结果
+ */
+export const evaluateUser = (orderId, userId) => {
+  return axiosInstance.put('/order/evaluate', null, { params: { orderId, userId } });
+};

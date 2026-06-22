@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.campus.secondhand.entity.Order;
 import com.campus.secondhand.entity.Product;
+import com.campus.secondhand.entity.User;
 import com.campus.secondhand.mapper.OrderMapper;
 import com.campus.secondhand.service.OrderService;
 import com.campus.secondhand.service.ProductService;
+import com.campus.secondhand.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Autowired
     private ProductService productService;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public Long createOrder(Order order) {
@@ -98,12 +103,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (order == null) {
             return false;
         }
-        // 更新订单状态为退货（假设4表示退货）
-        order.setStatus(4);
+        // 更新订单状态为退货（3表示退货）
+        order.setStatus(3);
         order.setUpdateTime(new Date());
         boolean updateResult = updateById(order);
 
-        // 退货后恢复商品状态为在售（假设1表示在售）
+        // 退货后恢复商品状态为在售（1表示在售）
         if (updateResult) {
             Product product = productService.getById(order.getProductId());
             if (product != null) {
@@ -121,8 +126,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (order == null) {
             return false;
         }
-        // 标记订单状态为"已删除/已取消"（用5表示）
-        order.setStatus(5);
+        // 标记订单状态为"已删除/已取消"（2表示已取消）
+        order.setStatus(2);
         order.setUpdateTime(new Date());
         return updateById(order);
     }
@@ -133,6 +138,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         queryWrapper.eq("buyer_id", userId) // 只查买家的订单
                 .orderByDesc("create_time");
         return baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    @Transactional
+    public boolean evaluateUser(Long orderId, Long userId) {
+        // 1. 获取被评价用户
+        User user = userService.getById(userId);
+        if (user == null) {
+            return false;
+        }
+        
+        // 2. 更新用户的信誉值，每次+1
+        user.setCreditLevel(user.getCreditLevel() + 1);
+        user.setUpdateTime(new Date());
+        
+        // 3. 保存更新后的用户信息
+        return userService.updateById(user);
     }
 
     // 关键修复：显式实现OrderService接口中的updateById方法
