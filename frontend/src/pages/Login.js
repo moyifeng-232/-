@@ -39,33 +39,43 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-form">
-        <h2>登录</h2>
+        <div className="login-header">
+          <h2>登录</h2>
+          <div className="login-underline"></div>
+          <p className="login-subtitle">欢迎回来，请登录您的账户</p>
+        </div>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label htmlFor="username">用户名</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+            <div className="input-wrapper">
+              <span className="input-icon">👤</span>
+              <input
+                type="text"
+                id="username"
+                placeholder="请输入用户名"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
           </div>
           <div className="form-group">
-            <label htmlFor="password">密码</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="input-wrapper">
+              <span className="input-icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                placeholder="请输入密码"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
           </div>
           <button type="submit" className="login-button">登录</button>
         </form>
         <div className="register-link">
-          还没有账号？ <Link to="/register">立即注册</Link>
+          还没有账号？ <Link to="/register" className="register-link-text">立即注册</Link>
         </div>
       </div>
     </div>

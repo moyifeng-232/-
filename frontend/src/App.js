@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, Navigate, useLocation } from 'react-router-dom';
 
 // 导入页面组件
 import ProductList from './pages/ProductList';
@@ -50,6 +50,7 @@ const Navigation = () => {
   const [featuredAnnouncement, setFeaturedAnnouncement] = useState(null);
   const [showFeaturedModal, setShowFeaturedModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // 获取当前路径
 
   // 检查用户是否已登录
   useEffect(() => {
@@ -170,42 +171,66 @@ const Navigation = () => {
               {/* 根据用户类型显示不同的首页 */}
               {user && user.userType === 2 ? (
                   <>
-                      <Link to="/admin">控制面板</Link>
-                      <Link to="/admin/statistics">统计与分析</Link>
+                      <Link to="/admin" className={location.pathname === '/admin' || location.pathname === '/admin/' ? 'active' : ''}>
+                        <span className="nav-text">控制面板</span>
+                        <span className="nav-underline"></span>
+                      </Link>
+                      <Link to="/admin/statistics" className={location.pathname === '/admin/statistics' ? 'active' : ''}>
+                        <span className="nav-text">统计与分析</span>
+                        <span className="nav-underline"></span>
+                      </Link>
                   </>
               ) : (
-                  <Link to="/home">首页</Link>
+                  <Link to="/home" className={location.pathname === '/home' ? 'active' : ''}>
+                    <span className="nav-text">首页</span>
+                    <span className="nav-underline"></span>
+                  </Link>
               )}
 
               {/* 所有用户都可以访问公告栏 */}
-              <Link to="/announcements">公告栏</Link>
+              <Link to="/announcements" className={location.pathname === '/announcements' ? 'active' : ''}>
+                <span className="nav-text">公告栏</span>
+                <span className="nav-underline"></span>
+              </Link>
 
               {user ? (
                 // 已登录状态
                 <>
                   {/* 非管理员用户显示已购买页面 */}
                   {user.userType !== 2 && (
-                      <Link to="/purchases">已购买</Link>
+                      <Link to="/purchases" className={location.pathname === '/purchases' ? 'active' : ''}>
+                        <span className="nav-text">已购买</span>
+                        <span className="nav-underline"></span>
+                      </Link>
                   )}
 
                   {/* 商家用户显示已发布和发布商品页面 */}
                   {user.userType === 1 && (
                       <>
-                        <Link to="/published">已发布</Link>
-                        <Link to="/publish">发布商品</Link>
+                        <Link to="/published" className={location.pathname === '/published' ? 'active' : ''}>
+                          <span className="nav-text">已发布</span>
+                          <span className="nav-underline"></span>
+                        </Link>
+                        <Link to="/publish" className={location.pathname === '/publish' ? 'active' : ''}>
+                          <span className="nav-text">发布商品</span>
+                          <span className="nav-underline"></span>
+                        </Link>
                       </>
                   )}
 
                   {/* 管理员用户不再显示单独的管理页面按钮，统一通过控制面板访问 */}
 
                   {/* 所有已登录用户显示对话按钮 */}
-                  <Link to="/chat" className="chat-link">对话</Link>
+                  <Link to="/chat" className={`chat-link ${location.pathname === '/chat' ? 'active' : ''}`}>
+                    <span className="nav-text">对话</span>
+                    <span className="nav-underline"></span>
+                  </Link>
 
                   <div className="user-info">
-                    <Link to="/profile" className="user-profile-link">
-                      <img 
-                        src={user.profilePicture || 'https://images.pexels.com/photos/34692672/pexels-photo-34692672.jpeg'} 
-                        alt="用户头像" 
+                    <Link to="/profile" className={`user-profile-link ${location.pathname === '/profile' ? 'active' : ''}`}>
+                      <img
+                        src={user.profilePicture || 'https://images.pexels.com/photos/34692672/pexels-photo-34692672.jpeg'}
+                        alt="用户头像"
                         className="user-avatar"
                       />
                       <span className="username">{user.username}</span>
@@ -227,8 +252,14 @@ const Navigation = () => {
             ) : (
                 // 未登录状态
                 <>
-                  <Link to="/login">登录</Link>
-                  <Link to="/register">注册</Link>
+                  <Link to="/login" className={location.pathname === '/login' ? 'active' : ''}>
+                    <span className="nav-text">登录</span>
+                    <span className="nav-underline"></span>
+                  </Link>
+                  <Link to="/register" className={location.pathname === '/register' ? 'active' : ''}>
+                    <span className="nav-text">注册</span>
+                    <span className="nav-underline"></span>
+                  </Link>
                 </>
             )}
           </nav>
